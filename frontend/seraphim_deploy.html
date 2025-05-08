@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SERAPHIM - vLLM Deployment</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
+        .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 800px; margin: auto; }
+        h1 { color: #0056b3; }
+        label { display: block; margin-top: 15px; margin-bottom: 5px; font-weight: bold; }
+        select, input[type="text"], input[type="number"], input[type="email"], button { width: calc(100% - 22px); padding: 10px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; cursor: pointer; border: none; }
+        button:hover { background-color: #0056b3; }
+        #output { margin-top: 20px; padding: 10px; background-color: #e9ecef; border: 1px solid #ced4da; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; }
+        .slurm-options label { font-weight: normal; margin-top: 10px; }
+        .info-text { font-size: 0.9em; color: #555; margin-bottom: 10px;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SERAPHIM - vLLM Model Deployment on Slurm</h1>
+        <p>Scalable Engine for Reasoning, Analysis, Prediction, Hosting, and Intelligent Modeling</p>
+
+        <label for="vllm-api-url">vLLM API Base URL (for fetching models list):</label>
+        <input type="text" id="vllm-api-url" value="http://localhost:8000">
+        <p class="info-text">Enter the URL from which your browser can reach the vLLM <code>/v1/models</code> endpoint. This might be <code>http://SERVER_IP:PORT</code> if vLLM runs on the same server as this interface, or requires an SSH tunnel (e.g., <code>http://localhost:TUNNEL_PORT</code>) if vLLM runs on a compute node.</p>
+        <button id="fetch-models-button">Fetch/Refresh Models</button>
+
+        <label for="model-select">Select Model:</label>
+        <select id="model-select">
+            <option value="">Click "Fetch/Refresh Models" or enter API URL first...</option>
+        </select>
+
+        <label for="service-port">Service Port for new vLLM (on Slurm compute node):</label>
+        <input type="number" id="service-port" value="8092">
+
+        <label for="hf-token">Hugging Face Token (HF_TOKEN):</label>
+        <input type="text" id="hf-token" placeholder="Enter your Hugging Face Token">
+
+        <h3>Slurm Configuration (Optional Overrides)</h3>
+        <div class="slurm-options">
+            <label for="job-name">Job Name:</label>
+            <input type="text" id="job-name" value="vllm_service">
+            <label for="time-limit">Time Limit (hh:mm:ss):</label>
+            <input type="text" id="time-limit" value="23:59:59">
+            <label for="gpus">GPUs Requested:</label>
+            <input type="number" id="gpus" value="1">
+            <label for="cpus-per-task">CPUs per Task:</label>
+            <input type="number" id="cpus-per-task" value="4">
+            <label for="mem">Memory per Node (e.g., 16G):</label>
+            <input type="text" id="mem" value="16G">
+            <label for="mail-user">Email for Notifications (Optional):</label>
+            <input type="email" id="mail-user" placeholder="your_email@example.com">
+        </div>
+
+        <button id="deploy-button">Generate Deploy Command</button>
+        <div id="output">Click "Generate Deploy Command" to see the sbatch script content.</div>
+    </div>
+
+    <script>
+        const modelSelect = document.getElementById('model-select');
+        const deployButton = document.getElementById('deploy-button');
+        const outputDiv = document.getElementById('output');
+        const servicePortInput = document.getElementById('service-port');
+        const hfTokenInput = document.getElementById('hf-token');
+        const vllmApiUrlInput = document.getElementById('vllm-api-url');
+        const fetchModelsButton = document.getElementById('fetch-models-button');
+
+        const jobNameInput = document.getElementById('job-name');
+        const timeLimitInput = document.getElementById('time-limit');
+        const gpusInput = document.getElementById('gpus');
+        const cpusPerTaskInput = document.getElementById('cpus-per-task');
+        const memInput = document.getElementById('mem');
+        const mailUserInput = document.getElementById('mail-user');
+        
+        const CONDA_ENV_NAME_JS = "seraphim_vllm_env";
+        const SCRIPTS_DIR_JS = "/home/aimotion_api/SERAPHIM/scripts";
+
+        async function fetchModels() {
+            const baseUrl = vllmApiUrlInput.value.trim();
+            if (!baseUrl) {
+                modelSelect.innerHTML = '<option value="">Please enter a vLLM API Base URL.</option>';
+                return;
+            }
+            const fullApiUrl = baseUrl.endsWith('/') ? baseUrl + 'v1/models' : baseUrl + '/v1/models';
+            
+            modelSelect.innerHTML = '<option value="">Fetching models from ' + fullApiUrl + '...</option>';
+            try {
+                const response = await fetch(fullApiUrl);
+                if (!response.ok) {
+                    let errorMsg = response.statusText;
+                    try { const errorData = await response.json(); errorMsg = errorData.detail || errorData.message || errorMsg; } catch (e) {}
+                    throw new Error(`HTTP error ${response.status}: ${errorMsg}`);
+                }
+                const data = await response.json();
+                
+                modelSelect.innerHTML = '<option value="">-- Select a Model --</option>';
+                if (data.data && data.data.length > 0) {
+                    data.data.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.id; option.textContent = model.id;
+                        modelSelect.appendChild(option);
+                    });
+                } else {
+                     modelSelect.innerHTML = '<option value="">No models found. API response format might be unexpected. Check console.</option>';
+                     console.warn("Received data from " + fullApiUrl + ":", data, "Expected format: { data: [{id: 'model_name'}, ...] }");
+                }
+            } catch (error) {
+                console.error("Error fetching models from " + fullApiUrl + ":", error);
+                modelSelect.innerHTML = `<option value="">Error fetching models. Is vLLM server at ${fullApiUrl} reachable? Details: ${error.message}</option>`;
+                const fallbackModels = ["mistralai/Mistral-7B-Instruct-v0.1", "meta-llama/Llama-2-7b-chat-hf", "mistralai/Pixtral-12B-2409", "mistral-community/pixtral-12b", "google/gemma-7b-it"];
+                modelSelect.innerHTML += fallbackModels.map(modelId => `<option value="${modelId}">${modelId} (Fallback)</option>`).join('');
+            }
+        }
+
+        fetchModelsButton.addEventListener('click', fetchModels);
+
+        deployButton.addEventListener('click', () => {
+            const selectedModel = modelSelect.value;
+            const servicePort = servicePortInput.value;
+            const hfToken = hfTokenInput.value;
+            const jobName = jobNameInput.value;
+            const timeLimit = timeLimitInput.value;
+            const gpus = gpusInput.value;
+            const cpusPerTask = cpusPerTaskInput.value;
+            const mem = memInput.value;
+            const mailUser = mailUserInput.value;
+
+            if (!selectedModel) { outputDiv.textContent = "Please select a model first."; return; }
+            if (!servicePort) { outputDiv.textContent = "Please enter a service port for the new vLLM instance."; return; }
+            if (!hfToken && selectedModel && (selectedModel.toLowerCase().includes("pixtral") || selectedModel.toLowerCase().includes("gated_model_identifier_example"))) {
+                outputDiv.textContent = "Please enter your Hugging Face Token for gated models."; return;
+            }
+
+            let vllmServeCommand = `vllm serve "${selectedModel}"`; 
+            let modelArgs = [`--host "0.0.0.0" --port ${servicePort}`, `--disable-log-stats`, `--trust-remote-code`];
+            let maxModelLen = 16384; 
+
+            if (selectedModel.toLowerCase().includes("pixtral")) {
+                modelArgs.push(`--guided-decoding-backend=lm-format-enforcer`, `--limit_mm_per_prompt 'image=8'`);
+                if (selectedModel.includes("mistralai/Pixtral-12B-2409")) {
+                     modelArgs.push(`--enable-auto-tool-choice`, `--tool-call-parser=mistral`, `--tokenizer_mode mistral`, `--revision aaef4baf771761a81ba89465a18e4427f3a105f9`);
+                } else if (selectedModel.includes("mistral-community/pixtral-12b")) {
+                     modelArgs.push(`--revision c2756cbbb9422eba9f6c5c439a214b0392dfc998`); maxModelLen = 32768; 
+                }
+            }
+            modelArgs.push(`--max-model-len ${maxModelLen}`);
+            vllmServeCommand += " \\\n    " + modelArgs.join(" \\\n    ");
+
+            const mailTypeLine = mailUser ? `#SBATCH --mail-type=ALL\\n#SBATCH --mail-user=\${mailUser}` : "#SBATCH --mail-type=NONE";
+            const condaBasePathForSlurm = "\\$(conda info --base)"; 
+            const seraphimScriptsDirForSlurm = SCRIPTS_DIR_JS;
+
+            const sbatchScriptContent = \`#!/bin/bash
+#SBATCH --job-name=\${jobName}
+#SBATCH --output=\${seraphimScriptsDirForSlurm}/\${jobName}_%j.out
+#SBATCH --error=\${seraphimScriptsDirForSlurm}/\${jobName}_%j.err
+#SBATCH --time=\${timeLimit}
+#SBATCH --gres=gpu:\${gpus}
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=\${cpusPerTask}
+#SBATCH --mem=\${mem}
+\${mailTypeLine}
+
+echo "=================================================================="
+echo "SERAPHIM vLLM Deployment Job"
+echo "Job Name: \${SLURM_JOB_NAME}; Job ID: \${SLURM_JOB_ID}"
+echo "Submitted to partition: \${SLURM_JOB_PARTITION}; Running on host: $(hostname)"
+echo "Working directory: $(pwd); Script/Log directory: \${seraphimScriptsDirForSlurm}"
+echo "Deployed Model: ${selectedModel}; Service Port: ${servicePort}"
+echo "Timestamp: $(date); Conda Env Name: \${CONDA_ENV_NAME_JS}"
+echo "=================================================================="
+
+CONDA_BASE_PATH_SLURM="\${condaBasePathForSlurm}"
+CONDA_SH_PATH="\${CONDA_BASE_PATH_SLURM}/etc/profile.d/conda.sh"
+
+echo "Attempting to source Conda from: \${CONDA_SH_PATH}"
+if [ -f "\${CONDA_SH_PATH}" ]; then source "\${CONDA_SH_PATH}"; echo "Sourced conda.sh from \${CONDA_BASE_PATH_SLURM}";
+else
+    echo "WARN: conda.sh not found at \${CONDA_SH_PATH}. Trying common alternatives..."
+    if [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then source "$HOME/miniconda3/etc/profile.d/conda.sh"; echo "Sourced $HOME/miniconda3/etc/profile.d/conda.sh";
+    elif [ -f "$HOME/anaconda3/etc/profile.d/conda.sh" ]; then source "$HOME/anaconda3/etc/profile.d/conda.sh"; echo "Sourced $HOME/anaconda3/etc/profile.d/conda.sh";
+    elif [ -f "/opt/conda/etc/profile.d/conda.sh" ]; then source "/opt/conda/etc/profile.d/conda.sh"; echo "Sourced /opt/conda/etc/profile.d/conda.sh";
+    else echo "ERROR: conda.sh not found. Conda environment activation will likely fail."; fi
+fi
+
+echo "Attempting to activate Conda environment: \${CONDA_ENV_NAME_JS}"
+conda activate \${CONDA_ENV_NAME_JS}
+if [ "$CONDA_DEFAULT_ENV" != "\${CONDA_ENV_NAME_JS}" ]; then
+    echo "ERROR: Failed to activate conda environment '\${CONDA_ENV_NAME_JS}'. Current: $CONDA_DEFAULT_ENV. Expected: \${CONDA_ENV_NAME_JS}";
+else echo "Successfully activated conda environment: \${CONDA_ENV_NAME_JS}. Python: $(which python) ($(python --version))"; fi
+
+export MAX_JOBS=16 HF_TOKEN="\${hfToken}" VLLM_USE_TRITON_FLASH_ATTN="True" VLLM_CONFIGURE_LOGGING=0 VLLM_NO_USAGE_STATS="True" VLLM_DO_NOT_TRACK="True" VLLM_USE_V1=1 
+echo -e "Starting vLLM server with command:\\n\${vllmServeCommand}"
+\${vllmServeCommand}
+echo "=================================================================="
+echo "vLLM Server command launched. Check Slurm logs in \${seraphimScriptsDirForSlurm}"
+echo "Job finished script execution at $(date)"
+echo "=================================================================="
+\`;
+            const deployScriptName = "deploy_vllm_job.slurm";
+            outputDiv.textContent = \`To deploy, save the following content as \${SCRIPTS_DIR_JS}/\${deployScriptName}:\n\n-------------------------------------\n\${sbatchScriptContent}\n-------------------------------------\n\nThen make it executable and submit:\n\nchmod +x \${SCRIPTS_DIR_JS}/\${deployScriptName}\nsbatch \${SCRIPTS_DIR_JS}/\${deployScriptName}\n\nOutput and error files will be in \${SCRIPTS_DIR_JS}\`;
+        });
+        // document.addEventListener('DOMContentLoaded', fetchModels); // Fetch on load removed, now button triggered
+    </script>
+</body>
+</html>
