@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SERAPHIM - vLLM Deployment</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #0056b3;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select, input[type="text"], input[type="number"], button {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            white-space: pre-wrap; /* Preserve formatting for command output */
+        }
+        .slurm-options label {
+            font-weight: normal;
+            margin-top: 10px;
+        }
+        .slurm-options input {
+            width: calc(50% - 22px);
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SERAPHIM - vLLM Model Deployment on Slurm</h1>
+        <p>Scalable Engine for Reasoning, Analysis, Prediction, Hosting, and Intelligent Modeling</p>
+
+        <label for="model-select">Select Model:</label>
+        <select id="model-select">
+            <option value="">Fetching models...</option>
+        </select>
+
+        <label for="service-port">Service Port for vLLM:</label>
+        <input type="number" id="service-port" value="8092">
+
+        <label for="hf-token">Hugging Face Token (HF_TOKEN):</label>
+        <input type="text" id="hf-token" placeholder="Enter your Hugging Face Token">
+
+        <h3>Slurm Configuration (Optional Overrides)</h3>
+        <div class="slurm-options">
+            <label for="job-name">Job Name:</label>
+            <input type="text" id="job-name" value="vllm_service">
+
+            <label for="time-limit">Time Limit (hh:mm:ss):</label>
+            <input type="text" id="time-limit" value="23:59:59">
+
+            <label for="gpus">GPUs Requested:</label>
+            <input type="number" id="gpus" value="1">
+
+            <label for="cpus-per-task">CPUs per Task:</label>
+            <input type="number" id="cpus-per-task" value="4">
+
+            <label for="mem">Memory per Node (e.g., 16G):</label>
+            <input type="text" id="mem" value="16G">
+
+            <label for="mail-user">Email for Notifications (Optional):</label>
+            <input type="email" id="mail-user" placeholder="your_email@example.com">
+        </div>
+
+
+        <button id="deploy-button">Generate Deploy Command</button>
+
+        <div id="output">
+            Click "Generate Deploy Command" to see the sbatch script content.
+        </div>
+    </div>
+
+    <script>
+        const modelSelect = document.getElementById('model-select');
+        const deployButton = document.getElementById('deploy-button');
+        const outputDiv = document.getElementById('output');
+        const servicePortInput = document.getElementById('service-port');
+        const hfTokenInput = document.getElementById('hf-token');
+
+        // Slurm Inputs
+        const jobNameInput = document.getElementById('job-name');
+        const timeLimitInput = document.getElementById('time-limit');
+        const gpusInput = document.getElementById('gpus');
+        const cpusPerTaskInput = document.getElementById('cpus-per-task');
+        const memInput = document.getElementById('mem');
+        const mailUserInput = document.getElementById('mail-user');
+
+
+        async function fetchModels() {
+            // This is the endpoint vLLM exposes to list models.
+            // It needs to be running and accessible from where this HTML is viewed.
+            const vllmApiUrl = 'http://localhost:8000/v1/models';
+            try {
+                // In a real scenario, the vLLM server needs to be running for this to work.
+                // We simulate a curl call using fetch.
+                const response = await fetch(vllmApiUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status} when fetching from ${vllmApiUrl}`);
+                }
+                const data = await response.json();
+                
+                modelSelect.innerHTML = '<option value="">-- Select a Model --</option>'; // Clear loading message
+                if (data.data && data.data.length > 0) {
+                    data.data.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.id; // Assuming 'id' is the model identifier
+                        option.textContent = model.id;
+                        modelSelect.appendChild(option);
+                    });
+                } else {
+                     modelSelect.innerHTML = '<option value="">No models found or incorrect API response format.</option>';
+                }
+            } catch (error) {
+                console.error("Error fetching models:", error);
+                modelSelect.innerHTML = '<option value="">Error fetching models. Is vLLM server running at ' + vllmApiUrl + '?</option>';
+                // Fallback models if API fails - you can pre-populate these
+                const fallbackModels = [
+                    "mistralai/Mistral-7B-Instruct-v0.1",
+                    "meta-llama/Llama-2-7b-chat-hf",
+                    "mistralai/Pixtral-12B-2409",
+                    "mistral-community/pixtral-12b"
+                ];
+                modelSelect.innerHTML = '<option value="">-- Select a Model (Fallback) --</option>';
+                fallbackModels.forEach(modelId => {
+                    const option = document.createElement('option');
+                    option.value = modelId;
+                    option.textContent = modelId;
+                    modelSelect.appendChild(option);
+                });
+            }
+        }
+
+        deployButton.addEventListener('click', () => {
+            const selectedModel = modelSelect.value;
+            const servicePort = servicePortInput.value;
+            const hfToken = hfTokenInput.value;
+
+            const jobName = jobNameInput.value;
+            const timeLimit = timeLimitInput.value;
+            const gpus = gpusInput.value;
+            const cpusPerTask = cpusPerTaskInput.value;
+            const mem = memInput.value;
+            const mailUser = mailUserInput.value;
+
+            if (!selectedModel) {
+                outputDiv.textContent = "Please select a model first.";
+                return;
+            }
+            if (!servicePort) {
+                outputDiv.textContent = "Please enter a service port.";
+                return;
+            }
+            if (!hfToken && (selectedModel.includes("Pixtral") || selectedModel.includes("pixtral"))) { // Check if token is needed
+                outputDiv.textContent = "Please enter your Hugging Face Token for gated models like Pixtral.";
+                return;
+            }
+
+            // Construct the sbatch script content
+            // Note: For models like pixtral, specific revisions or parameters might be needed.
+            // The script below is a template. You'll need to adjust the vllm serve command
+            // based on the specifics of the selectedModel if they vary significantly.
+
+            let vllmServeCommand = `vllm serve "${selectedModel}" \\\n`;
+            vllmServeCommand += `    --host "0.0.0.0" --port ${servicePort} \\\n`;
+            vllmServeCommand += `    --disable-log-stats \\\n`;
+            vllmServeCommand += `    --trust-remote-code --max-model-len 16384`; // Default max-model-len
+
+            // Example of model-specific configurations (you'll need to expand this)
+            if (selectedModel.toLowerCase().includes("pixtral")) {
+                vllmServeCommand = `vllm serve "${selectedModel}" \\\n`; // Reset for pixtral
+                vllmServeCommand += `    --guided-decoding-backend=lm-format-enforcer \\\n`;
+                if (selectedModel.includes("mistralai/Pixtral-12B-2409")) { // Official gated
+                     vllmServeCommand += `    --enable-auto-tool-choice \\\n`;
+                     vllmServeCommand += `    --tool-call-parser=mistral \\\n`;
+                     vllmServeCommand += `    --tokenizer_mode mistral \\\n`;
+                     vllmServeCommand += `    --revision aaef4baf771761a81ba89465a18e4427f3a105f9 \\\n`; // Specific revision from your script
+                } else if (selectedModel.includes("mistral-community/pixtral-12b")) { // Community
+                     vllmServeCommand += `    --revision c2756cbbb9422eba9f6c5c439a214b0392dfc998 \\\n`; // Specific revision
+                     vllmServeCommand += `    --max-model-len 32768 \\\n`;
+                }
+                vllmServeCommand += `    --limit_mm_per_prompt 'image=8' \\\n`;
+                vllmServeCommand += `    --host "0.0.0.0" --port ${servicePort} \\\n`;
+                vllmServeCommand += `    --disable-log-stats \\\n`;
+                vllmServeCommand += `    --trust-remote-code`;
+            }
+
+
+            const mailTypeLine = mailUser ? `#SBATCH --mail-type=ALL\n#SBATCH --mail-user=${mailUser}` : "#SBATCH --mail-type=NONE";
+
+            const sbatchScriptContent = `#!/bin/bash
+#SBATCH --job-name=${jobName}
+#SBATCH --output=${jobName}_%j.out
+#SBATCH --error=${jobName}_%j.err
+#SBATCH --time=${timeLimit}
+#SBATCH --gres=gpu:${gpus}
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=${cpusPerTask}
+#SBATCH --mem=${mem}
+${mailTypeLine}
+
+echo "=================================================================="
+echo "Starting Batch Job at $(date)"
+echo "Job submitted to partition \${SLURM_JOB_PARTITION} on \${SLURM_CLUSTER_NAME}"
+echo "Job name: \${SLURM_JOB_NAME}, Job ID: \${SLURM_JOB_ID}"
+echo "Requested \${SLURM_CPUS_ON_NODE} CPUs on compute node $(hostname)"
+echo "Working directory: $(pwd)"
+echo "Deploying model: ${selectedModel}"
+echo "Service port: ${servicePort}"
+echo "=================================================================="
+
+# Activate Conda environment (adjust path if needed)
+# IMPORTANT: This assumes your setup script (install_seraphim.sh) creates 'seraphim_vllm_env'
+# and this script is run in a context where 'conda' command is available.
+# You might need to source your .bashrc or conda.sh if not.
+# Example:
+# source ~/miniconda3/etc/profile.d/conda.sh
+# conda activate seraphim_vllm_env
+# If the install script handles activation for the sbatch session, this might not be needed here.
+# For now, let's assume the environment needs to be activated:
+if [ -d "$HOME/miniconda3/envs/seraphim_vllm_env" ] || [ -d "$HOME/anaconda3/envs/seraphim_vllm_env" ]; then
+    source $(conda info --base)/etc/profile.d/conda.sh # General way to source conda
+    conda activate seraphim_vllm_env
+    echo "Activated conda environment: seraphim_vllm_env"
+else
+    echo "Conda environment seraphim_vllm_env not found. Please run the installation script."
+    exit 1
+fi
+
+
+export MAX_JOBS=16
+export HF_TOKEN="${hfToken}"
+
+# Pip installs should ideally be in the conda env setup, not in the job script
+# pip3 install --upgrade setuptools # Already done by install script
+# pip3 install flash-attn # Already done by install script
+
+export VLLM_USE_TRITON_FLASH_ATTN="True"
+export VLLM_CONFIGURE_LOGGING=0 # Set to 1 for more verbose vLLM logs
+export VLLM_NO_USAGE_STATS="True"
+export VLLM_DO_NOT_TRACK="True"
+# export TORCH_CUDA_ARCH_LIST="8.9+PTX" # Optional: Uncomment if needed for specific GPUs like L40S
+export VLLM_USE_V1=1 # Using v1 alpha engine as per your script
+
+echo "Starting vLLM server for model: ${selectedModel}"
+${vllmServeCommand}
+
+echo "=================================================================="
+echo "vLLM Service command executed. Check logs for status."
+echo "Job finished at $(date)"
+echo "=================================================================="
+`;
+            // Display the command
+            outputDiv.textContent = `To deploy, save the following content as a .sh file (e.g., deploy_model.sh) and run:\n\nchmod +x deploy_model.sh\nsbatch deploy_model.sh\n\n-------------------------------------\n${sbatchScriptContent}`;
+
+            // In a real application, you'd send 'selectedModel' and 'servicePort'
+            // to a backend API that then generates this script and runs sbatch.
+            // For example:
+            // fetch('/api/deploy', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ model: selectedModel, port: servicePort, hf_token: hfToken, slurm_options: {...} })
+            // })
+            // .then(response => response.json())
+            // .then(data => outputDiv.textContent = data.message || data.error)
+            // .catch(err => outputDiv.textContent = "Error communicating with backend: " + err);
+        });
+
+        // Fetch models when the page loads
+        fetchModels();
+    </script>
+</body>
+</html>

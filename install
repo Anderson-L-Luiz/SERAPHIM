@@ -1,0 +1,568 @@
+#!/bin/bash
+
+# SERAPHIM Installation Script
+
+# Variables
+CONDA_ENV_NAME="seraphim_vllm_env"
+SERAPHIM_DIR="$HOME/seraphim_vllm_deployment"
+FRONTEND_DIR="$SERAPHIM_DIR/frontend"
+SCRIPTS_DIR="$SERAPHIM_DIR/scripts"
+VLLM_REQUIREMENTS_FILE="vllm_requirements.txt"
+
+echo "Starting SERAPHIM vLLM Deployment Setup..."
+echo "=========================================="
+
+# --- Helper Functions ---
+check_command() {
+    if ! command -v $1 &> /dev/null; then
+        echo "Error: $1 is not installed. Please install $1 and re-run the script."
+        exit 1
+    fi
+}
+
+# --- Pre-flight Checks ---
+echo "Checking for conda..."
+check_command conda
+
+# --- Create SERAPHIM Directories ---
+echo "Creating SERAPHIM directories at $SERAPHIM_DIR..."
+mkdir -p "$FRONTEND_DIR"
+mkdir -p "$SCRIPTS_DIR"
+echo "Directories created."
+echo ""
+
+# --- Create vLLM Requirements File ---
+echo "Creating vLLM requirements file ($VLLM_REQUIREMENTS_FILE)..."
+cat > "$SCRIPTS_DIR/$VLLM_REQUIREMENTS_FILE" << EOF
+aiohappyeyeballs==2.4.4
+aiohttp==3.11.11
+aiohttp-cors==0.7.0
+aiosignal==1.3.2
+airportsdata==20241001
+annotated-types==0.7.0
+anyio==4.8.0
+astor==0.8.1
+async-timeout==5.0.1
+attrs==25.1.0
+blake3==1.0.4
+cachetools==5.5.1
+certifi==2025.1.31
+charset-normalizer==3.4.1
+click==8.1.8
+cloudpickle==3.1.1
+colorful==0.5.6
+compressed-tensors==0.9.0
+depyf==0.18.0
+dill==0.3.9
+diskcache==5.6.3
+distlib==0.3.9
+distro==1.9.0
+einops==0.8.0
+exceptiongroup==1.2.2
+fastapi==0.115.8
+filelock==3.17.0
+frozenlist==1.5.0
+fsspec==2025.2.0
+gguf==0.10.0
+google-api-core==2.24.1
+google-auth==2.38.0
+googleapis-common-protos==1.66.0
+grpcio==1.70.0
+h11==0.14.0
+httpcore==1.0.7
+httptools==0.6.4
+httpx==0.28.1
+huggingface-hub==0.28.1
+idna==3.10
+importlib_metadata==8.6.1
+iniconfig==2.0.0
+interegular==0.3.3
+Jinja2==3.1.5
+jiter==0.8.2
+jsonschema==4.23.0
+jsonschema-specifications==2024.10.1
+lark==1.2.2
+lm-format-enforcer==0.10.9
+MarkupSafe==3.0.2
+mistral_common==1.5.2
+mpmath==1.3.0
+msgpack==1.1.0
+msgspec==0.19.0
+multidict==6.1.0
+nest-asyncio==1.6.0
+networkx==3.4.2
+numpy==1.26.4
+nvidia-cublas-cu12==12.4.5.8
+nvidia-cuda-cupti-cu12==12.4.127
+nvidia-cuda-nvrtc-cu12==12.4.127
+nvidia-cuda-runtime-cu12==12.4.127
+nvidia-cudnn-cu12==9.1.0.70
+nvidia-cufft-cu12==11.2.1.3
+nvidia-curand-cu12==10.3.5.147
+nvidia-cusolver-cu12==11.6.1.9
+nvidia-cusparse-cu12==12.3.1.170
+nvidia-ml-py==12.570.86
+nvidia-nccl-cu12==2.21.5
+nvidia-nvjitlink-cu12==12.4.127
+nvidia-nvtx-cu12==12.4.127
+openai==1.61.0
+opencensus==0.11.4
+opencensus-context==0.1.3
+opencv-python-headless==4.11.0.86
+outlines==0.1.11
+outlines_core==0.1.26
+packaging==24.2
+partial-json-parser==0.2.1.1.post5
+pillow==10.4.0
+platformdirs==4.3.6
+pluggy==1.5.0
+prometheus-fastapi-instrumentator==7.0.2
+prometheus_client==0.21.1
+propcache==0.2.1
+proto-plus==1.26.0
+protobuf==5.29.3
+psutil==6.1.1
+py-cpuinfo==9.0.0
+py-spy==0.4.0
+pyasn1==0.6.1
+pyasn1_modules==0.4.1
+pybind11==2.13.6
+pycountry==24.6.1
+pydantic==2.10.6
+pydantic_core==2.27.2
+pytest==8.3.4
+python-dotenv==1.0.1
+PyYAML==6.0.2
+pyzmq==26.2.1
+ray==2.42.0
+referencing==0.36.2
+regex==2024.11.6
+requests==2.32.3
+rpds-py==0.22.3
+rsa==4.9
+safetensors==0.5.2
+sentencepiece==0.2.0
+six==1.17.0
+smart-open==7.1.0
+sniffio==1.3.1
+starlette==0.45.3
+sympy==1.13.1
+tiktoken==0.7.0
+tokenizers==0.21.0
+tomli==2.2.1
+torch==2.5.1
+torchaudio==2.5.1
+torchvision==0.20.1
+tqdm==4.67.1
+transformers==4.48.2
+triton==3.1.0
+typing_extensions==4.12.2
+urllib3==2.3.0
+uvicorn==0.34.0
+uvloop==0.21.0
+virtualenv==20.29.1
+vllm==0.7.1
+watchfiles==1.0.4
+websockets==14.2
+wrapt==1.17.2
+xformers==0.0.28.post3
+xgrammar==0.1.11
+yarl==1.18.3
+zipp==3.21.0
+# Additional crucial dependency for GPU acceleration if not covered by torch/vllm's own nvidia packages
+flash-attn
+EOF
+echo "Requirements file created."
+echo ""
+
+# --- Setup Conda Environment ---
+echo "Setting up Conda environment: $CONDA_ENV_NAME"
+# Remove existing environment if it exists
+conda env remove -n "$CONDA_ENV_NAME" -y || true # Ignore error if it doesn't exist
+conda create -n "$CONDA_ENV_NAME" python=3.10 -y # vLLM often works well with Python 3.9-3.11
+
+echo "Activating Conda environment: $CONDA_ENV_NAME"
+# Source conda for the current script session
+# The exact path to conda.sh might vary (miniconda3, anaconda3, etc.)
+# Try a common path first
+CONDA_BASE=$(conda info --base)
+source "$CONDA_BASE/etc/profile.d/conda.sh"
+conda activate "$CONDA_ENV_NAME"
+
+if [ "$CONDA_DEFAULT_ENV" != "$CONDA_ENV_NAME" ]; then
+    echo "Error: Failed to activate conda environment $CONDA_ENV_NAME."
+    echo "Please ensure conda is initialized correctly for your shell (e.g., run 'conda init bash' and restart your shell)."
+    exit 1
+fi
+echo "Conda environment '$CONDA_ENV_NAME' activated."
+echo ""
+
+# --- Install Python Dependencies ---
+echo "Installing Python dependencies from $VLLM_REQUIREMENTS_FILE..."
+pip install --upgrade pip setuptools wheel
+pip install -r "$SCRIPTS_DIR/$VLLM_REQUIREMENTS_FILE"
+echo "Python dependencies installed."
+echo ""
+
+# --- Place Frontend HTML ---
+echo "Placing frontend HTML file (seraphim_deploy.html) in $FRONTEND_DIR..."
+# Create the HTML file (seraphim_deploy.html)
+cat > "$FRONTEND_DIR/seraphim_deploy.html" << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SERAPHIM - vLLM Deployment</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #0056b3;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select, input[type="text"], input[type="number"], input[type="email"], button {
+            width: calc(100% - 22px); /* Account for padding */
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box; /* So padding doesn't add to width */
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            white-space: pre-wrap; /* Preserve formatting for command output */
+            word-wrap: break-word;
+        }
+        .slurm-options label {
+            font-weight: normal;
+            margin-top: 10px;
+        }
+        .slurm-options input {
+            /* width: calc(50% - 22px); */ /* Adjust if you want two per line */
+            /* margin-right: 10px; */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SERAPHIM - vLLM Model Deployment on Slurm</h1>
+        <p>Scalable Engine for Reasoning, Analysis, Prediction, Hosting, and Intelligent Modeling</p>
+
+        <label for="model-select">Select Model:</label>
+        <select id="model-select">
+            <option value="">Fetching models...</option>
+        </select>
+
+        <label for="service-port">Service Port for vLLM:</label>
+        <input type="number" id="service-port" value="8092">
+
+        <label for="hf-token">Hugging Face Token (HF_TOKEN):</label>
+        <input type="text" id="hf-token" placeholder="Enter your Hugging Face Token">
+
+        <h3>Slurm Configuration (Optional Overrides)</h3>
+        <div class="slurm-options">
+            <label for="job-name">Job Name:</label>
+            <input type="text" id="job-name" value="vllm_service">
+
+            <label for="time-limit">Time Limit (hh:mm:ss):</label>
+            <input type="text" id="time-limit" value="23:59:59">
+
+            <label for="gpus">GPUs Requested:</label>
+            <input type="number" id="gpus" value="1">
+
+            <label for="cpus-per-task">CPUs per Task:</label>
+            <input type="number" id="cpus-per-task" value="4">
+
+            <label for="mem">Memory per Node (e.g., 16G):</label>
+            <input type="text" id="mem" value="16G">
+
+            <label for="mail-user">Email for Notifications (Optional):</label>
+            <input type="email" id="mail-user" placeholder="your_email@example.com">
+        </div>
+
+
+        <button id="deploy-button">Generate Deploy Command</button>
+
+        <div id="output">
+            Click "Generate Deploy Command" to see the sbatch script content.
+        </div>
+    </div>
+
+    <script>
+        const modelSelect = document.getElementById('model-select');
+        const deployButton = document.getElementById('deploy-button');
+        const outputDiv = document.getElementById('output');
+        const servicePortInput = document.getElementById('service-port');
+        const hfTokenInput = document.getElementById('hf-token');
+
+        // Slurm Inputs
+        const jobNameInput = document.getElementById('job-name');
+        const timeLimitInput = document.getElementById('time-limit');
+        const gpusInput = document.getElementById('gpus');
+        const cpusPerTaskInput = document.getElementById('cpus-per-task');
+        const memInput = document.getElementById('mem');
+        const mailUserInput = document.getElementById('mail-user');
+
+
+        async function fetchModels() {
+            const vllmApiUrl = 'http://localhost:8000/v1/models';
+            try {
+                const response = await fetch(vllmApiUrl);
+                if (!response.ok) {
+                    // Try to parse error if possible, otherwise use status text
+                    let errorMsg = response.statusText;
+                    try {
+                        const errorData = await response.json();
+                        errorMsg = errorData.detail || errorData.message || errorMsg;
+                    } catch (e) { /* ignore json parsing error */ }
+                    throw new Error(`HTTP error ${response.status}: ${errorMsg} when fetching from ${vllmApiUrl}`);
+                }
+                const data = await response.json();
+                
+                modelSelect.innerHTML = '<option value="">-- Select a Model --</option>';
+                if (data.data && data.data.length > 0) {
+                    data.data.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.id;
+                        option.textContent = model.id;
+                        modelSelect.appendChild(option);
+                    });
+                } else {
+                     modelSelect.innerHTML = '<option value="">No models found or API response format unexpected. Check console.</option>';
+                     console.log("Received data:", data);
+                }
+            } catch (error) {
+                console.error("Error fetching models:", error);
+                modelSelect.innerHTML = `<option value="">Error fetching models. Is vLLM server running at ${vllmApiUrl}? Details: ${error.message}</option>`;
+                const fallbackModels = [
+                    "mistralai/Mistral-7B-Instruct-v0.1",
+                    "meta-llama/Llama-2-7b-chat-hf",
+                    "mistralai/Pixtral-12B-2409",
+                    "mistral-community/pixtral-12b"
+                ];
+                modelSelect.innerHTML += fallbackModels.map(modelId => `<option value="${modelId}">${modelId} (Fallback)</option>`).join('');
+            }
+        }
+
+        deployButton.addEventListener('click', () => {
+            const selectedModel = modelSelect.value;
+            const servicePort = servicePortInput.value;
+            const hfToken = hfTokenInput.value;
+
+            const jobName = jobNameInput.value;
+            const timeLimit = timeLimitInput.value;
+            const gpus = gpusInput.value;
+            const cpusPerTask = cpusPerTaskInput.value;
+            const mem = memInput.value;
+            const mailUser = mailUserInput.value;
+
+            if (!selectedModel) {
+                outputDiv.textContent = "Please select a model first.";
+                return;
+            }
+            if (!servicePort) {
+                outputDiv.textContent = "Please enter a service port.";
+                return;
+            }
+             if (!hfToken && selectedModel && (selectedModel.toLowerCase().includes("pixtral") || selectedModel.toLowerCase().includes("gated_model_identifier"))) {
+                outputDiv.textContent = "Please enter your Hugging Face Token for gated models (e.g., Pixtral).";
+                return;
+            }
+
+
+            let vllmServeCommand = `vllm serve "${selectedModel}" \\\n`;
+            vllmServeCommand += `    --host "0.0.0.0" --port ${servicePort} \\\n`;
+            vllmServeCommand += `    --disable-log-stats \\\n`;
+            vllmServeCommand += `    --trust-remote-code --max-model-len 16384`;
+
+            if (selectedModel.toLowerCase().includes("pixtral")) {
+                vllmServeCommand = `vllm serve "${selectedModel}" \\\n`;
+                vllmServeCommand += `    --guided-decoding-backend=lm-format-enforcer \\\n`;
+                if (selectedModel.includes("mistralai/Pixtral-12B-2409")) {
+                     vllmServeCommand += `    --enable-auto-tool-choice \\\n`;
+                     vllmServeCommand += `    --tool-call-parser=mistral \\\n`;
+                     vllmServeCommand += `    --tokenizer_mode mistral \\\n`;
+                     vllmServeCommand += `    --revision aaef4baf771761a81ba89465a18e4427f3a105f9 \\\n`;
+                } else if (selectedModel.includes("mistral-community/pixtral-12b")) {
+                     vllmServeCommand += `    --revision c2756cbbb9422eba9f6c5c439a214b0392dfc998 \\\n`;
+                     vllmServeCommand += `    --max-model-len 32768 \\\n`; // Overriding default
+                }
+                vllmServeCommand += `    --limit_mm_per_prompt 'image=8' \\\n`;
+                vllmServeCommand += `    --host "0.0.0.0" --port ${servicePort} \\\n`;
+                vllmServeCommand += `    --disable-log-stats \\\n`;
+                vllmServeCommand += `    --trust-remote-code`;
+                 if (!selectedModel.includes("mistral-community/pixtral-12b")) { // Add back default max-model-len if not community pixtral
+                     vllmServeCommand += ` --max-model-len 16384`;
+                 }
+
+            } else {
+                 // For other models, ensure max-model-len is consistently applied if not overridden
+                 if (!vllmServeCommand.includes("--max-model-len")) {
+                    vllmServeCommand += ` --max-model-len 16384`;
+                 }
+            }
+
+
+            const mailTypeLine = mailUser ? `#SBATCH --mail-type=ALL\n#SBATCH --mail-user=${mailUser}` : "#SBATCH --mail-type=NONE";
+            const condaBasePath = "$(conda info --base)"; // Get conda base path dynamically within the script
+
+            const sbatchScriptContent = \`#!/bin/bash
+#SBATCH --job-name=\${jobName}
+#SBATCH --output=\${SCRIPTS_DIR}/\${jobName}_%j.out
+#SBATCH --error=\${SCRIPTS_DIR}/\${jobName}_%j.err
+#SBATCH --time=\${timeLimit}
+#SBATCH --gres=gpu:\${gpus}
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=\${cpusPerTask}
+#SBATCH --mem=\${mem}
+\${mailTypeLine}
+
+echo "=================================================================="
+echo "SERAPHIM vLLM Deployment Job"
+echo "Job Name: \${SLURM_JOB_NAME}"
+echo "Job ID: \${SLURM_JOB_ID}"
+echo "Submitted to partition: \${SLURM_JOB_PARTITION}"
+echo "Running on host: $(hostname)"
+echo "Working directory: $(pwd)"
+echo "Script directory: \${SCRIPTS_DIR}"
+echo "Deployed Model: ${selectedModel}"
+echo "Service Port: ${servicePort}"
+echo "Timestamp: $(date)"
+echo "=================================================================="
+
+# Environment Setup
+echo "Attempting to source Conda..."
+if [ -f "\${condaBasePath}/etc/profile.d/conda.sh" ]; then
+    source "\${condaBasePath}/etc/profile.d/conda.sh"
+else
+    echo "Could not find conda.sh at \${condaBasePath}/etc/profile.d/conda.sh"
+    echo "Trying common alternative paths for Miniconda/Anaconda..."
+    if [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
+        source "$HOME/miniconda3/etc/profile.d/conda.sh"
+    elif [ -f "$HOME/anaconda3/etc/profile.d/conda.sh" ]; then
+        source "$HOME/anaconda3/etc/profile.d/conda.sh"
+    else
+        echo "conda.sh not found in common user directories either. Conda environment activation might fail."
+        echo "Please ensure your Slurm environment can find and source conda.sh."
+    fi
+fi
+
+echo "Attempting to activate Conda environment: ${CONDA_ENV_NAME}"
+conda activate ${CONDA_ENV_NAME}
+if [ "$CONDA_DEFAULT_ENV" != "${CONDA_ENV_NAME}" ]; then
+    echo "Failed to activate conda environment: ${CONDA_ENV_NAME}. Current env: $CONDA_DEFAULT_ENV"
+    echo "Make sure the environment exists and conda is properly initialized in your shell."
+    # exit 1 # Consider exiting if activation fails
+else
+    echo "Successfully activated conda environment: ${CONDA_ENV_NAME}"
+fi
+echo "Python executable: $(which python)"
+echo "pip executable: $(which pip)"
+
+export MAX_JOBS=16 # As per original script
+export HF_TOKEN="\${hfToken}"
+
+export VLLM_USE_TRITON_FLASH_ATTN="True"
+export VLLM_CONFIGURE_LOGGING=0
+export VLLM_NO_USAGE_STATS="True"
+export VLLM_DO_NOT_TRACK="True"
+# export TORCH_CUDA_ARCH_LIST="8.9+PTX" # Optional
+export VLLM_USE_V1=1 # As per original script
+
+echo "Starting vLLM server..."
+echo "Command: \${vllmServeCommand}"
+
+\${vllmServeCommand}
+
+echo "=================================================================="
+echo "vLLM Server command has been launched (may run in background depending on vLLM)."
+echo "Check Slurm output files in \${SCRIPTS_DIR} for logs: \${jobName}_%j.out and \${jobName}_%j.err"
+echo "Job finished execution script at $(date)"
+echo "=================================================================="
+\`;
+            const deployScriptName = "deploy_vllm_job.slurm";
+            outputDiv.textContent = \`To deploy, save the following content as \${SCRIPTS_DIR}/\${deployScriptName}:\n\n-------------------------------------\n\${sbatchScriptContent}\n-------------------------------------\n\nThen make it executable and submit:\n\nchmod +x \${SCRIPTS_DIR}/\${deployScriptName}\nsbatch \${SCRIPTS_DIR}/\${deployScriptName}\n\nOutput and error files will be in \${SCRIPTS_DIR}\`;
+
+        });
+        document.addEventListener('DOMContentLoaded', fetchModels);
+    </script>
+</body>
+</html>
+EOF
+echo "Frontend HTML (seraphim_deploy.html) created in $FRONTEND_DIR."
+echo ""
+
+
+# --- Final Instructions ---
+echo "=========================================="
+echo "SERAPHIM Setup Complete!"
+echo "=========================================="
+echo ""
+echo "To use SERAPHIM:"
+echo ""
+echo "1. Activate the Conda environment (if not already active):"
+echo "   conda activate $CONDA_ENV_NAME"
+echo ""
+echo "2. Start a simple HTTP server to serve the frontend HTML:"
+echo "   cd \"$FRONTEND_DIR\""
+echo "   python -m http.server 8080  (or any other available port)"
+echo "   Then open http://localhost:8080/seraphim_deploy.html in your web browser."
+echo ""
+echo "3. For the 'Select Model' dropdown to populate dynamically:"
+echo "   - You need a vLLM instance (OpenAI compatible server) running and accessible at http://localhost:8000 (or the URL configured in the HTML's JavaScript fetchModels function)."
+echo "   - If no vLLM server is running when you load the page, the dropdown will show fallback models or an error."
+echo "   - The vLLM server started by the Slurm script will run on the compute node, typically not accessible as 'localhost' from your browser directly. You might need port forwarding (e.g. SSH tunneling: ssh -L 8000:COMPUTE_NODE_HOSTNAME_OR_IP:PORT_FROM_SLURM_JOB user@slurm_head_node) to make the /v1/models endpoint reachable by your browser if you want dynamic loading from a *running* Slurm job's vLLM instance."
+echo ""
+echo "4. The 'Generate Deploy Command' button will create the content for a Slurm batch script."
+echo "   - Copy this content into a file (e.g., $SCRIPTS_DIR/deploy_vllm_job.slurm)."
+echo "   - Make it executable: chmod +x $SCRIPTS_DIR/deploy_vllm_job.slurm"
+echo "   - Submit it to Slurm: sbatch $SCRIPTS_DIR/deploy_vllm_job.slurm"
+echo "   - The Slurm script will activate the '$CONDA_ENV_NAME' environment."
+echo "   - Ensure your Slurm nodes can access the Conda environment path ($CONDA_BASE/envs/$CONDA_ENV_NAME) or that conda is installed and configured consistently across nodes."
+echo ""
+echo "5. IMPORTANT SLURM SCRIPT NOTES:"
+echo "   - The generated Slurm script now saves output/error files to '$SCRIPTS_DIR'."
+echo "   - It attempts to source conda.sh and activate the environment. Adjust paths if your conda installation is non-standard or not in the default $HOME/miniconda3 or $HOME/anaconda3."
+echo "   - Replace '<YOUR TOKEN>' in the HTML interface with your actual Hugging Face token if deploying gated models like Pixtral."
+echo ""
+echo "Location of SERAPHIM files: $SERAPHIM_DIR"
+echo "Frontend: $FRONTEND_DIR/seraphim_deploy.html"
+echo "Generated Slurm scripts and logs will be in: $SCRIPTS_DIR"
+echo "Conda Environment: $CONDA_ENV_NAME"
+echo ""
+echo "To remove the conda environment later:"
+echo "conda deactivate"
+echo "conda env remove -n $CONDA_ENV_NAME -y"
+echo "=========================================="
+
+# Deactivate environment after script finishes
+conda deactivate
