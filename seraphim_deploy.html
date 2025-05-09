@@ -1,307 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SERAPHIM - vLLM Deployment</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>✧ SERAPHIM CORE ✧ vLLM Deployment Interface</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #029702; /* Electric blue */
+            --secondary-color: #f3cb00; /* Lighter cyan/blue */
+            --accent-color: #ffcc00; /* Gold accent */
+            --bg-color: #1c1c1e; /* Dark background */
+            --card-bg-color: #2c2c2e; /* Slightly lighter card background */
+            --text-color: #e5e5e7; /* Light text */
+            --text-muted-color: #8e8e93;
+            --border-color: #3a3a3c;
+            --font-body: 'Exo 2', sans-serif;
+            --font-heading: 'Orbitron', sans-serif; /* Tech font */
+        }
         body {
-            font-family: sans-serif;
-            margin: 20px;
-            background-color: #f4f4f4;
-            color: #333;
+            font-family: var(--font-body);
+            margin: 0; padding:0; background-color: var(--bg-color);
+            color: var(--text-color); display: flex; flex-direction: column;
+            min-height: 100vh; font-size: 16px; line-height: 1.6;
         }
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white; padding: 20px 30px; text-align: center;
+            border-bottom: 3px solid var(--accent-color);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
-        h1 {
-            color: #0056b3;
+        .header h1 {
+            margin: 0; font-family: var(--font-heading); font-size: 2.3em;
+            font-weight: 700; letter-spacing: 2px; display: flex; align-items: center; justify-content: center; gap: 15px;
         }
-        label {
-            display: block;
-            margin-top: 15px;
-            margin-bottom: 5px;
-            font-weight: bold;
+        .header p { margin: 8px 0 0; font-size: 0.95em; opacity: 0.9; font-weight: 300;}
+        .main-container { display: flex; flex-wrap: wrap; padding: 20px; gap: 20px; flex-grow: 1; max-width: 1300px; margin: 20px auto; width: 100%; box-sizing: border-box;}
+        .form-container, .endpoints-container {
+            background-color: var(--card-bg-color); padding: 25px; border-radius: 10px;
+            border: 1px solid var(--border-color); box-sizing: border-box;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
-        select, input[type="text"], input[type="number"], button {
-            width: calc(100% - 22px);
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
+        .form-container { flex: 2; min-width: 400px; }
+        .endpoints-container { flex: 1; min-width: 350px; }
+        h3 {
+            font-family: var(--font-heading); color: var(--secondary-color);
+            border-bottom: 1px solid var(--accent-color); padding-bottom: 10px;
+            margin-top: 0; margin-bottom: 20px; font-size: 1.4em; letter-spacing: 1px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        label { display: block; margin-top: 15px; margin-bottom: 5px; font-weight: 600; font-size: 0.9em; color: var(--text-muted-color); text-transform: uppercase; letter-spacing: 0.5px;}
+        select, input[type="text"], input[type="number"], input[type="email"], input[type="password"] {
+            width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 5px;
+            border: 1px solid var(--border-color); box-sizing: border-box; font-size: 0.95em;
+            background-color: #3a3a3c; color: var(--text-color);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        select:focus, input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
+            outline: none; background-color: #4a4a4e;
         }
         button {
-            background-color: #007bff;
-            color: white;
-            cursor: pointer;
-            border: none;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white; padding: 12px 20px; cursor: pointer; border: none; border-radius: 5px;
+            font-weight: bold; font-size: 1em; text-transform: uppercase; letter-spacing: 0.8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: all 0.3s ease; margin-top: 10px;
+            width: 100%; /* Make buttons full width */
         }
-        button:hover {
-            background-color: #0056b3;
+        button:hover, button:focus {
+            background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); transform: translateY(-2px);
         }
         #output {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #e9ecef;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            white-space: pre-wrap; /* Preserve formatting for command output */
+            margin-top: 20px; padding: 15px; background-color: #1c1c1e; /* Darker background for output */
+            border: 1px solid var(--border-color); border-radius: 6px; white-space: pre-wrap;
+            word-wrap: break-word; font-size: 0.9em; max-height: 400px; overflow-y: auto;
+            line-height: 1.6; font-family: 'Courier New', Courier, monospace; color: #a5d6ff; /* Light blue text for code */
         }
-        .slurm-options label {
-            font-weight: normal;
-            margin-top: 10px;
+        .slurm-options h3 { margin-top: 25px; font-size: 1.2em;}
+        .slurm-options label { font-weight: 400; font-size: 0.85em; margin-top: 8px; }
+
+        .endpoints-container #refresh-endpoints-button {
+            background: linear-gradient(to right, #ffcc00, #ff9500); /* Gold/Orange gradient */
+            margin-bottom: 15px;
         }
-        .slurm-options input {
-            width: calc(50% - 22px);
-            margin-right: 10px;
+        .endpoints-container #refresh-endpoints-button:hover {
+            background: linear-gradient(to right, #ff9500, #ffcc00);
         }
+        .endpoint-item {
+            background-color: #3a3a3c; border: 1px solid #4a4a4e; padding: 15px;
+            margin-bottom: 10px; border-radius: 6px; font-size: 0.9em; line-height: 1.6;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .endpoint-item strong { color: var(--secondary-color); } /* Lighter blue */
+        .endpoint-item a { color: var(--accent-color); text-decoration: none; font-weight: bold;}
+        .endpoint-item a:hover { text-decoration: underline; color: #ffd633; /* Brighter gold */ }
+
+        .footer {
+            text-align: center; padding: 20px; background-color: #0e0e0f; /* Even darker footer */
+            color: #8e8e93; font-size: 0.9em; margin-top: auto;
+            border-top: 3px solid var(--accent-color);
+        }
+        .icon { margin-right: 8px; font-size: 1.2em; vertical-align: middle;} /* For unicode symbols */
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>SERAPHIM - vLLM Model Deployment on Slurm</h1>
+    <div class="header">
+        <h1><span class="icon"></span> SERAPHIM <span class="icon"></span></h1>
         <p>Scalable Engine for Reasoning, Analysis, Prediction, Hosting, and Intelligent Modeling</p>
+    </div>
 
-        <label for="model-select">Select Model:</label>
-        <select id="model-select">
-            <option value="">Fetching models...</option>
-        </select>
+    <div class="main-container">
+        <div class="form-container">
+            <h3><span class="icon">⚙️</span> Deploy New vLLM Instance</h3>
 
-        <label for="service-port">Service Port for vLLM:</label>
-        <input type="number" id="service-port" value="8092">
+            <label for="model-select">Select Model:</label>
+            <select id="model-select">
+                <option value="">-- Select a Model --</option>
+            </select>
 
-        <label for="hf-token">Hugging Face Token (HF_TOKEN):</label>
-        <input type="text" id="hf-token" placeholder="Enter your Hugging Face Token">
+            <label for="service-port">Service Port (on Slurm node):</label>
+            <input type="number" id="service-port" value="8000" min="1024" max="65535"/>
 
-        <h3>Slurm Configuration (Optional Overrides)</h3>
-        <div class="slurm-options">
-            <label for="job-name">Job Name:</label>
-            <input type="text" id="job-name" value="vllm_service">
+            <label for="hf-token">Hugging Face Token (Optional):</label>
+            <input type="password" id="hf-token" placeholder="Needed for Llama, gated models, etc."/>
 
-            <label for="time-limit">Time Limit (hh:mm:ss):</label>
-            <input type="text" id="time-limit" value="23:59:59">
+            <div class="slurm-options">
+                <h3>Slurm Configuration</h3>
+                <label for="job-name">Job Name:</label>
+                <input type="text" id="job-name" value="vllm_service"/>
+                <label for="time-limit">Time Limit (HH:MM:SS):</label>
+                <input type="text" id="time-limit" value="23:59:59"/>
+                <label for="gpus">GPUs (e.g., 1 or a100:1):</label>
+                <input type="text" id="gpus" value="1"/>
+                <label for="cpus-per-task">CPUs per Task:</label>
+                <input type="number" id="cpus-per-task" value="4" min="1"/>
+                <label for="mem">Memory (e.g., 32G):</label>
+                <input type="text" id="mem" value="32G"/>
+                <label for="mail-user">Email Notify (Optional):</label>
+                <input type="email" id="mail-user" placeholder="your_email@example.com"/>
+            </div>
 
-            <label for="gpus">GPUs Requested:</label>
-            <input type="number" id="gpus" value="1">
-
-            <label for="cpus-per-task">CPUs per Task:</label>
-            <input type="number" id="cpus-per-task" value="4">
-
-            <label for="mem">Memory per Node (e.g., 16G):</label>
-            <input type="text" id="mem" value="16G">
-
-            <label for="mail-user">Email for Notifications (Optional):</label>
-            <input type="email" id="mail-user" placeholder="your_email@example.com">
+            <button id="deploy-button">Generate Slurm Script</button>
+            <div id="output">Select model & click button to generate script.</div>
         </div>
 
-
-        <button id="deploy-button">Generate Deploy Command</button>
-
-        <div id="output">
-            Click "Generate Deploy Command" to see the sbatch script content.
+        <div class="endpoints-container">
+            <h3><span class="icon">📡</span> Active Deployments (Placeholder)</h3>
+            <button id="refresh-endpoints-button">Refresh Status</button>
+            <div id="deployed-endpoints-list">
+                <p>Requires backend integration to list active Slurm jobs and parse vLLM service logs for endpoint details.</p>
+            </div>
         </div>
     </div>
 
-    <script>
-        const modelSelect = document.getElementById('model-select');
-        const deployButton = document.getElementById('deploy-button');
-        const outputDiv = document.getElementById('output');
-        const servicePortInput = document.getElementById('service-port');
-        const hfTokenInput = document.getElementById('hf-token');
+    <div class="footer">
+        ✧ SERAPHIM CORE Interface v1.1 ✧ System Online ✧
+    </div>
 
-        // Slurm Inputs
-        const jobNameInput = document.getElementById('job-name');
-        const timeLimitInput = document.getElementById('time-limit');
-        const gpusInput = document.getElementById('gpus');
-        const cpusPerTaskInput = document.getElementById('cpus-per-task');
-        const memInput = document.getElementById('mem');
-        const mailUserInput = document.getElementById('mail-user');
+    <script src="seraphim_logic.js" defer></script>
 
-
-        async function fetchModels() {
-            // This is the endpoint vLLM exposes to list models.
-            // It needs to be running and accessible from where this HTML is viewed.
-            const vllmApiUrl = 'http://localhost:8000/v1/models';
-            try {
-                // In a real scenario, the vLLM server needs to be running for this to work.
-                // We simulate a curl call using fetch.
-                const response = await fetch(vllmApiUrl);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status} when fetching from ${vllmApiUrl}`);
-                }
-                const data = await response.json();
-                
-                modelSelect.innerHTML = '<option value="">-- Select a Model --</option>'; // Clear loading message
-                if (data.data && data.data.length > 0) {
-                    data.data.forEach(model => {
-                        const option = document.createElement('option');
-                        option.value = model.id; // Assuming 'id' is the model identifier
-                        option.textContent = model.id;
-                        modelSelect.appendChild(option);
-                    });
-                } else {
-                     modelSelect.innerHTML = '<option value="">No models found or incorrect API response format.</option>';
-                }
-            } catch (error) {
-                console.error("Error fetching models:", error);
-                modelSelect.innerHTML = '<option value="">Error fetching models. Is vLLM server running at ' + vllmApiUrl + '?</option>';
-                // Fallback models if API fails - you can pre-populate these
-                const fallbackModels = [
-                    "mistralai/Mistral-7B-Instruct-v0.1",
-                    "meta-llama/Llama-2-7b-chat-hf",
-                    "mistralai/Pixtral-12B-2409",
-                    "mistral-community/pixtral-12b"
-                ];
-                modelSelect.innerHTML = '<option value="">-- Select a Model (Fallback) --</option>';
-                fallbackModels.forEach(modelId => {
-                    const option = document.createElement('option');
-                    option.value = modelId;
-                    option.textContent = modelId;
-                    modelSelect.appendChild(option);
-                });
-            }
-        }
-
-        deployButton.addEventListener('click', () => {
-            const selectedModel = modelSelect.value;
-            const servicePort = servicePortInput.value;
-            const hfToken = hfTokenInput.value;
-
-            const jobName = jobNameInput.value;
-            const timeLimit = timeLimitInput.value;
-            const gpus = gpusInput.value;
-            const cpusPerTask = cpusPerTaskInput.value;
-            const mem = memInput.value;
-            const mailUser = mailUserInput.value;
-
-            if (!selectedModel) {
-                outputDiv.textContent = "Please select a model first.";
-                return;
-            }
-            if (!servicePort) {
-                outputDiv.textContent = "Please enter a service port.";
-                return;
-            }
-            if (!hfToken && (selectedModel.includes("Pixtral") || selectedModel.includes("pixtral"))) { // Check if token is needed
-                outputDiv.textContent = "Please enter your Hugging Face Token for gated models like Pixtral.";
-                return;
-            }
-
-            // Construct the sbatch script content
-            // Note: For models like pixtral, specific revisions or parameters might be needed.
-            // The script below is a template. You'll need to adjust the vllm serve command
-            // based on the specifics of the selectedModel if they vary significantly.
-
-            let vllmServeCommand = `vllm serve "${selectedModel}" \\\n`;
-            vllmServeCommand += `    --host "0.0.0.0" --port ${servicePort} \\\n`;
-            vllmServeCommand += `    --disable-log-stats \\\n`;
-            vllmServeCommand += `    --trust-remote-code --max-model-len 16384`; // Default max-model-len
-
-            // Example of model-specific configurations (you'll need to expand this)
-            if (selectedModel.toLowerCase().includes("pixtral")) {
-                vllmServeCommand = `vllm serve "${selectedModel}" \\\n`; // Reset for pixtral
-                vllmServeCommand += `    --guided-decoding-backend=lm-format-enforcer \\\n`;
-                if (selectedModel.includes("mistralai/Pixtral-12B-2409")) { // Official gated
-                     vllmServeCommand += `    --enable-auto-tool-choice \\\n`;
-                     vllmServeCommand += `    --tool-call-parser=mistral \\\n`;
-                     vllmServeCommand += `    --tokenizer_mode mistral \\\n`;
-                     vllmServeCommand += `    --revision aaef4baf771761a81ba89465a18e4427f3a105f9 \\\n`; // Specific revision from your script
-                } else if (selectedModel.includes("mistral-community/pixtral-12b")) { // Community
-                     vllmServeCommand += `    --revision c2756cbbb9422eba9f6c5c439a214b0392dfc998 \\\n`; // Specific revision
-                     vllmServeCommand += `    --max-model-len 32768 \\\n`;
-                }
-                vllmServeCommand += `    --limit_mm_per_prompt 'image=8' \\\n`;
-                vllmServeCommand += `    --host "0.0.0.0" --port ${servicePort} \\\n`;
-                vllmServeCommand += `    --disable-log-stats \\\n`;
-                vllmServeCommand += `    --trust-remote-code`;
-            }
-
-
-            const mailTypeLine = mailUser ? `#SBATCH --mail-type=ALL\n#SBATCH --mail-user=${mailUser}` : "#SBATCH --mail-type=NONE";
-
-            const sbatchScriptContent = `#!/bin/bash
-#SBATCH --job-name=${jobName}
-#SBATCH --output=${jobName}_%j.out
-#SBATCH --error=${jobName}_%j.err
-#SBATCH --time=${timeLimit}
-#SBATCH --gres=gpu:${gpus}
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=${cpusPerTask}
-#SBATCH --mem=${mem}
-${mailTypeLine}
-
-echo "=================================================================="
-echo "Starting Batch Job at $(date)"
-echo "Job submitted to partition \${SLURM_JOB_PARTITION} on \${SLURM_CLUSTER_NAME}"
-echo "Job name: \${SLURM_JOB_NAME}, Job ID: \${SLURM_JOB_ID}"
-echo "Requested \${SLURM_CPUS_ON_NODE} CPUs on compute node $(hostname)"
-echo "Working directory: $(pwd)"
-echo "Deploying model: ${selectedModel}"
-echo "Service port: ${servicePort}"
-echo "=================================================================="
-
-# Activate Conda environment (adjust path if needed)
-# IMPORTANT: This assumes your setup script (install_seraphim.sh) creates 'seraphim_vllm_env'
-# and this script is run in a context where 'conda' command is available.
-# You might need to source your .bashrc or conda.sh if not.
-# Example:
-# source ~/miniconda3/etc/profile.d/conda.sh
-# conda activate seraphim_vllm_env
-# If the install script handles activation for the sbatch session, this might not be needed here.
-# For now, let's assume the environment needs to be activated:
-if [ -d "$HOME/miniconda3/envs/seraphim_vllm_env" ] || [ -d "$HOME/anaconda3/envs/seraphim_vllm_env" ]; then
-    source $(conda info --base)/etc/profile.d/conda.sh # General way to source conda
-    conda activate seraphim_vllm_env
-    echo "Activated conda environment: seraphim_vllm_env"
-else
-    echo "Conda environment seraphim_vllm_env not found. Please run the installation script."
-    exit 1
-fi
-
-
-export MAX_JOBS=16
-export HF_TOKEN="${hfToken}"
-
-# Pip installs should ideally be in the conda env setup, not in the job script
-# pip3 install --upgrade setuptools # Already done by install script
-# pip3 install flash-attn # Already done by install script
-
-export VLLM_USE_TRITON_FLASH_ATTN="True"
-export VLLM_CONFIGURE_LOGGING=0 # Set to 1 for more verbose vLLM logs
-export VLLM_NO_USAGE_STATS="True"
-export VLLM_DO_NOT_TRACK="True"
-# export TORCH_CUDA_ARCH_LIST="8.9+PTX" # Optional: Uncomment if needed for specific GPUs like L40S
-export VLLM_USE_V1=1 # Using v1 alpha engine as per your script
-
-echo "Starting vLLM server for model: ${selectedModel}"
-${vllmServeCommand}
-
-echo "=================================================================="
-echo "vLLM Service command executed. Check logs for status."
-echo "Job finished at $(date)"
-echo "=================================================================="
-`;
-            // Display the command
-            outputDiv.textContent = `To deploy, save the following content as a .sh file (e.g., deploy_model.sh) and run:\n\nchmod +x deploy_model.sh\nsbatch deploy_model.sh\n\n-------------------------------------\n${sbatchScriptContent}`;
-
-            // In a real application, you'd send 'selectedModel' and 'servicePort'
-            // to a backend API that then generates this script and runs sbatch.
-            // For example:
-            // fetch('/api/deploy', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ model: selectedModel, port: servicePort, hf_token: hfToken, slurm_options: {...} })
-            // })
-            // .then(response => response.json())
-            // .then(data => outputDiv.textContent = data.message || data.error)
-            // .catch(err => outputDiv.textContent = "Error communicating with backend: " + err);
-        });
-
-        // Fetch models when the page loads
-        fetchModels();
-    </script>
 </body>
 </html>

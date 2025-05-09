@@ -3,120 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SERAPHIM - vLLM Deployment</title>
+    <title>✝ SERAPHIM ✝ - vLLM Deployment Console</title>
     <style>
-        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
-        .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 800px; margin: auto; }
-        h1 { color: #0056b3; }
-        label { display: block; margin-top: 15px; margin-bottom: 5px; font-weight: bold; }
-        select, input[type="text"], input[type="number"], input[type="email"], button { width: calc(100% - 22px); padding: 10px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
-        button { background-color: #007bff; color: white; cursor: pointer; border: none; }
-        button:hover { background-color: #0056b3; }
-        #output { margin-top: 20px; padding: 10px; background-color: #e9ecef; border: 1px solid #ced4da; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; }
-        .slurm-options label { font-weight: normal; margin-top: 10px; }
-        .info-text { font-size: 0.9em; color: #555; margin-bottom: 10px;}
+        /* Angelic Styles from previous step */
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap');
+        body { font-family: 'Lato', sans-serif; margin: 0; padding:0; background-color: #f0f4f8; color: #4a5568; display: flex; flex-direction: column; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #76a2dd 0%, #4c77b3 100%); color: white; padding: 20px 30px; text-align: center; box-shadow: 0 3px 6px rgba(0,0,0,0.1); border-bottom: 3px solid #d4af37; }
+        .header h1 { margin: 0; font-family: 'Cinzel', serif; font-size: 2.2em; font-weight: 700; letter-spacing: 1px; }
+        .header p { margin: 5px 0 0; font-size: 0.95em; opacity: 0.95; font-weight: 300;}
+        .main-container { display: flex; flex-wrap: wrap; padding: 25px; gap: 25px; flex-grow: 1; }
+        .form-container, .endpoints-container { background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;}
+        .form-container { flex: 2; min-width: 450px; }
+        .endpoints-container { flex: 1; min-width: 380px; }
+        h3 { font-family: 'Cinzel', serif; color: #3b5998; border-bottom: 2px solid #d4af37aa; padding-bottom: 8px; margin-top: 25px; margin-bottom:15px; font-size: 1.4em; }
+        label { display: block; margin-top: 18px; margin-bottom: 6px; font-weight: 700; font-size: 0.9em; color: #2d3748; }
+        select, input[type="text"], input[type="number"], input[type="email"] { width: calc(100% - 24px); padding: 11px; margin-bottom: 18px; border-radius: 5px; border: 1px solid #cbd5e0; box-sizing: border-box; font-size: 0.95em; background-color: #f7fafc; color: #4a5568; }
+        select:focus, input:focus { border-color: #76a2dd; box-shadow: 0 0 0 2px rgba(118, 162, 221, 0.3); outline: none; }
+        button { background: linear-gradient(to right, #89f7fe, #66a6ff); color: white; padding: 12px 18px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; font-size: 1em; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.3s ease; }
+        button:hover { background: linear-gradient(to right, #66a6ff, #89f7fe); box-shadow: 0 4px 8px rgba(0,0,0,0.15); transform: translateY(-1px); }
+        #output { margin-top: 20px; padding: 12px; background-color: #e2e8f0; border: 1px solid #cbd5e0; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; font-size: 0.85em; max-height: 300px; overflow-y: auto; line-height: 1.6; }
+        .slurm-options label { font-weight: 400; margin-top: 10px; }
+        .endpoints-container #refresh-endpoints-button { background: linear-gradient(to right, #f6d365, #fda085); }
+        .endpoints-container #refresh-endpoints-button:hover { background: linear-gradient(to right, #fda085, #f6d365); }
+        .endpoint-item { background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; margin-bottom: 12px; border-radius: 5px; font-size: 0.9em; line-height: 1.6; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .endpoint-item strong { color: #4c77b3; }
+        .endpoint-item a { color: #d4af37; text-decoration: none; font-weight: bold;}
+        .endpoint-item a:hover { text-decoration: underline; color: #b8860b; }
+        .footer { text-align: center; padding: 20px; background-color: #2d3748; color: #a0aec0; font-size: 0.85em; margin-top: auto; border-top: 3px solid #d4af37;}
+        .sparkle { color: #d4af37; margin: 0 5px;}
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>SERAPHIM - vLLM Model Deployment on Slurm</h1>
+    <div class="header">
+        <h1><span class="sparkle">✨</span> SERAPHIM <span class="sparkle">✨</span></h1>
         <p>Scalable Engine for Reasoning, Analysis, Prediction, Hosting, and Intelligent Modeling</p>
+    </div>
 
-        <label for="vllm-api-url">vLLM API Base URL (for fetching models list):</label>
-        <input type="text" id="vllm-api-url" value="http://localhost:8000">
-        <p class="info-text">Enter the URL from which your browser can reach the vLLM <code>/v1/models</code> endpoint. This might be <code>http://SERVER_IP:PORT</code> if vLLM runs on the same server as this interface, or requires an SSH tunnel (e.g., <code>http://localhost:TUNNEL_PORT</code>) if vLLM runs on a compute node.</p>
-        <button id="fetch-models-button">Fetch/Refresh Models</button>
+    <div class="main-container">
+        <div class="form-container">
+            <h3><span class="sparkle">🕊️</span> Deploy New vLLM Service</h3>
+            
+            <label for="model-select">Select Model:</label>
+            <select id="model-select">
+                <option value="">-- Select a Model --</option>
+                </select>
 
-        <label for="model-select">Select Model:</label>
-        <select id="model-select">
-            <option value="">Click "Fetch/Refresh Models" or enter API URL first...</option>
-        </select>
+            <label for="service-port">Service Port for new vLLM (on Slurm node):</label>
+            <input type="number" id="service-port" value="8092">
 
-        <label for="service-port">Service Port for new vLLM (on Slurm compute node):</label>
-        <input type="number" id="service-port" value="8092">
+            <label for="hf-token">Hugging Face Token (for gated models):</label>
+            <input type="text" id="hf-token" placeholder="Your HF_TOKEN if needed">
 
-        <label for="hf-token">Hugging Face Token (HF_TOKEN):</label>
-        <input type="text" id="hf-token" placeholder="Enter your Hugging Face Token">
+            <div class="slurm-options">
+                <h3>Slurm Configuration</h3>
+                <label for="job-name">Job Name:</label>
+                <input type="text" id="job-name" value="vllm_seraph_service">
+                <label for="time-limit">Time Limit (hh:mm:ss):</label>
+                <input type="text" id="time-limit" value="23:59:59">
+                <label for="gpus">GPUs Requested:</label>
+                <input type="number" id="gpus" value="1">
+                <label for="cpus-per-task">CPUs per Task:</label>
+                <input type="number" id="cpus-per-task" value="4">
+                <label for="mem">Memory per Node (e.g., 16G):</label>
+                <input type="text" id="mem" value="16G">
+                <label for="mail-user">Email for Notifications (Optional):</label>
+                <input type="email" id="mail-user" placeholder="your_email@example.com">
+            </div>
 
-        <h3>Slurm Configuration (Optional Overrides)</h3>
-        <div class="slurm-options">
-            <label for="job-name">Job Name:</label>
-            <input type="text" id="job-name" value="vllm_service">
-            <label for="time-limit">Time Limit (hh:mm:ss):</label>
-            <input type="text" id="time-limit" value="23:59:59">
-            <label for="gpus">GPUs Requested:</label>
-            <input type="number" id="gpus" value="1">
-            <label for="cpus-per-task">CPUs per Task:</label>
-            <input type="number" id="cpus-per-task" value="4">
-            <label for="mem">Memory per Node (e.g., 16G):</label>
-            <input type="text" id="mem" value="16G">
-            <label for="mail-user">Email for Notifications (Optional):</label>
-            <input type="email" id="mail-user" placeholder="your_email@example.com">
+            <button id="deploy-button">Initiate Deployment</button>
+            <div id="output">Deployment script will appear here...</div>
         </div>
 
-        <button id="deploy-button">Generate Deploy Command</button>
-        <div id="output">Click "Generate Deploy Command" to see the sbatch script content.</div>
+        <div class="endpoints-container">
+            <h3><span class="sparkle">🌟</span> Active Deployments</h3>
+            <button id="refresh-endpoints-button">Refresh List</button>
+            <div id="deployed-endpoints-list">
+                <p>Endpoint display requires a backend. Check Slurm logs.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        ✝ SERAPHIM Interface ✝ &copy; 2025 ✝
     </div>
 
     <script>
-        const modelSelect = document.getElementById('model-select');
-        const deployButton = document.getElementById('deploy-button');
-        const outputDiv = document.getElementById('output');
-        const servicePortInput = document.getElementById('service-port');
-        const hfTokenInput = document.getElementById('hf-token');
-        const vllmApiUrlInput = document.getElementById('vllm-api-url');
-        const fetchModelsButton = document.getElementById('fetch-models-button');
-
-        const jobNameInput = document.getElementById('job-name');
-        const timeLimitInput = document.getElementById('time-limit');
-        const gpusInput = document.getElementById('gpus');
-        const cpusPerTaskInput = document.getElementById('cpus-per-task');
-        const memInput = document.getElementById('mem');
-        const mailUserInput = document.getElementById('mail-user');
-        
+        // --- Global Constants & Variables ---
         const CONDA_ENV_NAME_JS = "seraphim_vllm_env";
         const SCRIPTS_DIR_JS = "/home/aimotion_api/SERAPHIM/scripts";
 
-        async function fetchModels() {
-            const baseUrl = vllmApiUrlInput.value.trim();
-            if (!baseUrl) {
-                modelSelect.innerHTML = '<option value="">Please enter a vLLM API Base URL.</option>';
-                return;
+        const staticModels = [
+            { id: "mistralai/Mistral-7B-Instruct-v0.1", name: "Mistral-7B-Instruct-v0.1" },
+            { id: "meta-llama/Llama-2-7b-chat-hf", name: "Llama-2-7B-Chat-HF" },
+            { id: "google/gemma-7b-it", name: "Gemma-7B-IT (Google)" },
+            { id: "Qwen/Qwen2-7B-Instruct", name: "Qwen2-7B-Instruct" },
+            { id: "BAAI/AquilaChat-7B", name: "AquilaChat-7B (BAAI)"},
+            { id: "mistralai/Mixtral-8x7B-Instruct-v0.1", name: "Mixtral-8x7B-Instruct-v0.1" },
+            { id: "EleutherAI/gpt-j-6b", name: "GPT-J-6B (EleutherAI)"},
+            { id: "tiiuae/falcon-7b-instruct", name: "Falcon-7B-Instruct (TII UAE)"},
+            { id: "mistralai/Pixtral-12B-2409", name: "Pixtral-12B-2409 (Multimodal)" },
+            { id: "microsoft/phi-2", name: "Phi-2 (Microsoft)"}
+        ];
+        
+        // --- Core Functions ---
+        function populateStaticModels() {
+            console.log("SERAPHIM_DEBUG: Attempting to populate static models...");
+            const modelSelect = document.getElementById('model-select'); 
+            if (!modelSelect) {
+                console.error("SERAPHIM_DEBUG: CRITICAL ERROR - Cannot find element with ID 'model-select'.");
+                return; 
             }
-            const fullApiUrl = baseUrl.endsWith('/') ? baseUrl + 'v1/models' : baseUrl + '/v1/models';
+            console.log("SERAPHIM_DEBUG: Found modelSelect element:", modelSelect);
             
-            modelSelect.innerHTML = '<option value="">Fetching models from ' + fullApiUrl + '...</option>';
-            try {
-                const response = await fetch(fullApiUrl);
-                if (!response.ok) {
-                    let errorMsg = response.statusText;
-                    try { const errorData = await response.json(); errorMsg = errorData.detail || errorData.message || errorMsg; } catch (e) {}
-                    throw new Error(`HTTP error ${response.status}: ${errorMsg}`);
-                }
-                const data = await response.json();
-                
-                modelSelect.innerHTML = '<option value="">-- Select a Model --</option>';
-                if (data.data && data.data.length > 0) {
-                    data.data.forEach(model => {
-                        const option = document.createElement('option');
-                        option.value = model.id; option.textContent = model.id;
-                        modelSelect.appendChild(option);
-                    });
-                } else {
-                     modelSelect.innerHTML = '<option value="">No models found. API response format might be unexpected. Check console.</option>';
-                     console.warn("Received data from " + fullApiUrl + ":", data, "Expected format: { data: [{id: 'model_name'}, ...] }");
-                }
-            } catch (error) {
-                console.error("Error fetching models from " + fullApiUrl + ":", error);
-                modelSelect.innerHTML = `<option value="">Error fetching models. Is vLLM server at ${fullApiUrl} reachable? Details: ${error.message}</option>`;
-                const fallbackModels = ["mistralai/Mistral-7B-Instruct-v0.1", "meta-llama/Llama-2-7b-chat-hf", "mistralai/Pixtral-12B-2409", "mistral-community/pixtral-12b", "google/gemma-7b-it"];
-                modelSelect.innerHTML += fallbackModels.map(modelId => `<option value="${modelId}">${modelId} (Fallback)</option>`).join('');
+            // Clear existing options (start from index 1 to keep the placeholder)
+            while (modelSelect.options.length > 1) {
+                 modelSelect.remove(modelSelect.options.length - 1);
             }
+            console.log("SERAPHIM_DEBUG: Cleared existing options. Count:", modelSelect.options.length);
+
+            // Add static models from the array
+            staticModels.forEach(model => {
+                if (typeof model.id === 'string' && typeof model.name === 'string') {
+                    const option = document.createElement('option');
+                    option.value = model.id;
+                    option.textContent = model.name;
+                    modelSelect.appendChild(option);
+                } else {
+                    console.warn("SERAPHIM_DEBUG: Skipping invalid model data:", model);
+                }
+            });
+            console.log("SERAPHIM_DEBUG: Finished populating models. Final count:", modelSelect.options.length);
         }
 
-        fetchModelsButton.addEventListener('click', fetchModels);
+        function refreshDeployedEndpoints() {
+            console.log("SERAPHIM_DEBUG: Refreshing deployed endpoints (placeholder)...");
+            const deployedEndpointsListDiv = document.getElementById('deployed-endpoints-list');
+            if (!deployedEndpointsListDiv) {
+                 console.error("SERAPHIM_DEBUG: Could not find deployed-endpoints-list div.");
+                 return;
+            }
+            deployedEndpointsListDiv.innerHTML = "<p><em>Refreshing... (Backend needed for live data).</em></p>";
+            
+            // ** Using a simple string assignment for the example HTML to avoid potential template literal issues **
+            const exampleHtml = '<p>Endpoint display requires a backend. Check Slurm logs.</p>' +
+                '<div class="endpoint-item">' +
+                '<strong>Model:</strong> example/Sample-7B (Example)<br>' +
+                '<strong>Job ID:</strong> SLURM_JOB_ID_EXAMPLE<br>' +
+                '<strong>Node:</strong> compute-node-example.cluster<br>' +
+                '<strong>Port:</strong> 8000<br>' +
+                '<strong>Access:</strong> <a href="#" onclick="alert(\'This is an example. Actual link depends on network setup/tunnels to compute-node-example.cluster:8000\'); return false;">http://compute-node-example.cluster:8000</a>' +
+                '</div>';
 
-        deployButton.addEventListener('click', () => {
+            setTimeout(() => {
+                 deployedEndpointsListDiv.innerHTML = exampleHtml;
+             }, 500);
+        }
+
+        function handleDeployClick() {
+            // Define elements inside handler
+            const modelSelect = document.getElementById('model-select');
+            const outputDiv = document.getElementById('output');
+            const servicePortInput = document.getElementById('service-port');
+            const hfTokenInput = document.getElementById('hf-token');
+            const jobNameInput = document.getElementById('job-name');
+            const timeLimitInput = document.getElementById('time-limit');
+            const gpusInput = document.getElementById('gpus');
+            const cpusPerTaskInput = document.getElementById('cpus-per-task');
+            const memInput = document.getElementById('mem');
+            const mailUserInput = document.getElementById('mail-user');
+
+            console.log("SERAPHIM_DEBUG: Deploy button clicked.");
+            if (!modelSelect || !outputDiv || !servicePortInput || !hfTokenInput || !jobNameInput || !timeLimitInput || !gpusInput || !cpusPerTaskInput || !memInput || !mailUserInput) {
+                 console.error("SERAPHIM_DEBUG: One or more form elements missing!"); alert("Error: Interface elements missing."); return;
+            }
+
             const selectedModel = modelSelect.value;
             const servicePort = servicePortInput.value;
             const hfToken = hfTokenInput.value;
@@ -127,31 +187,38 @@
             const mem = memInput.value;
             const mailUser = mailUserInput.value;
 
-            if (!selectedModel) { outputDiv.textContent = "Please select a model first."; return; }
-            if (!servicePort) { outputDiv.textContent = "Please enter a service port for the new vLLM instance."; return; }
-            if (!hfToken && selectedModel && (selectedModel.toLowerCase().includes("pixtral") || selectedModel.toLowerCase().includes("gated_model_identifier_example"))) {
-                outputDiv.textContent = "Please enter your Hugging Face Token for gated models."; return;
+            // --- Validation ---
+            if (!selectedModel) { outputDiv.textContent = "⚠️ Please select a model first."; return; }
+            if (!servicePort) { outputDiv.textContent = "⚠️ Please enter a service port."; return; }
+            let warning = "";
+            if (!hfToken && (selectedModel.toLowerCase().includes("pixtral") || selectedModel.toLowerCase().includes("llama") || selectedModel.toLowerCase().includes("meta-llama") || selectedModel.toLowerCase().includes("gated"))) {
+                warning = "ℹ️ This model might be gated. Provide HF Token if needed.\n\n";
             }
+            outputDiv.textContent = warning + "Generating deployment script...";
 
-            let vllmServeCommand = `vllm serve "${selectedModel}"`; 
-            let modelArgs = [`--host "0.0.0.0" --port ${servicePort}`, `--disable-log-stats`, `--trust-remote-code`];
+            // --- Build vLLM Command ---
+            // Using template literals here for readability; ensure backticks are correct
+            let vllmServeCommand = \`vllm serve "\${selectedModel}"\`; 
+            let modelArgs = [\`--host "0.0.0.0" --port \${servicePort}\`, \`--disable-log-stats\`, \`--trust-remote-code\`];
             let maxModelLen = 16384; 
+            if (selectedModel.toLowerCase().includes("pixtral")) { 
+                 modelArgs.push(\`--guided-decoding-backend=lm-format-enforcer\`, \`--limit_mm_per_prompt 'image=8'\`);
+                 if (selectedModel.includes("mistralai/Pixtral-12B-2409")) {
+                      modelArgs.push(\`--enable-auto-tool-choice\`, \`--tool-call-parser=mistral\`, \`--tokenizer_mode mistral\`, \`--revision aaef4baf771761a81ba89465a18e4427f3a105f9\`);
+                 }
+             } else if (selectedModel.toLowerCase().includes("mixtral")) { 
+                 maxModelLen = 32768; 
+             }
+            modelArgs.push(\`--max-model-len \${maxModelLen}\`);
+            // Ensure backslashes and newlines are correctly handled for shell command embedding
+            vllmServeCommand += " \\\ \n    " + modelArgs.join(" \\\ \n    "); 
 
-            if (selectedModel.toLowerCase().includes("pixtral")) {
-                modelArgs.push(`--guided-decoding-backend=lm-format-enforcer`, `--limit_mm_per_prompt 'image=8'`);
-                if (selectedModel.includes("mistralai/Pixtral-12B-2409")) {
-                     modelArgs.push(`--enable-auto-tool-choice`, `--tool-call-parser=mistral`, `--tokenizer_mode mistral`, `--revision aaef4baf771761a81ba89465a18e4427f3a105f9`);
-                } else if (selectedModel.includes("mistral-community/pixtral-12b")) {
-                     modelArgs.push(`--revision c2756cbbb9422eba9f6c5c439a214b0392dfc998`); maxModelLen = 32768; 
-                }
-            }
-            modelArgs.push(`--max-model-len ${maxModelLen}`);
-            vllmServeCommand += " \\\n    " + modelArgs.join(" \\\n    ");
-
-            const mailTypeLine = mailUser ? `#SBATCH --mail-type=ALL\\n#SBATCH --mail-user=\${mailUser}` : "#SBATCH --mail-type=NONE";
+            // --- Build Slurm Script ---
+            const mailTypeLine = mailUser ? \`#SBATCH --mail-type=ALL\\n#SBATCH --mail-user=\${mailUser}\` : "#SBATCH --mail-type=NONE";
             const condaBasePathForSlurm = "\\$(conda info --base)"; 
-            const seraphimScriptsDirForSlurm = SCRIPTS_DIR_JS;
+            const seraphimScriptsDirForSlurm = SCRIPTS_DIR_JS; 
 
+             // Using template literal for the Slurm script itself
             const sbatchScriptContent = \`#!/bin/bash
 #SBATCH --job-name=\${jobName}
 #SBATCH --output=\${seraphimScriptsDirForSlurm}/\${jobName}_%j.out
@@ -162,47 +229,60 @@
 #SBATCH --cpus-per-task=\${cpusPerTask}
 #SBATCH --mem=\${mem}
 \${mailTypeLine}
-
 echo "=================================================================="
-echo "SERAPHIM vLLM Deployment Job"
-echo "Job Name: \${SLURM_JOB_NAME}; Job ID: \${SLURM_JOB_ID}"
-echo "Submitted to partition: \${SLURM_JOB_PARTITION}; Running on host: $(hostname)"
-echo "Working directory: $(pwd); Script/Log directory: \${seraphimScriptsDirForSlurm}"
-echo "Deployed Model: ${selectedModel}; Service Port: ${servicePort}"
-echo "Timestamp: $(date); Conda Env Name: \${CONDA_ENV_NAME_JS}"
+echo "✝ SERAPHIM vLLM Deployment Job ✝"
+echo "Job Start Time: $(date)"
+echo "Job ID: \${SLURM_JOB_ID} running on \$(hostname -f)"
+echo "Model: \${selectedModel}"
+echo "Port: \${servicePort}"
+echo "Conda Env: \${CONDA_ENV_NAME_JS}"
 echo "=================================================================="
-
 CONDA_BASE_PATH_SLURM="\${condaBasePathForSlurm}"
 CONDA_SH_PATH="\${CONDA_BASE_PATH_SLURM}/etc/profile.d/conda.sh"
-
-echo "Attempting to source Conda from: \${CONDA_SH_PATH}"
-if [ -f "\${CONDA_SH_PATH}" ]; then source "\${CONDA_SH_PATH}"; echo "Sourced conda.sh from \${CONDA_BASE_PATH_SLURM}";
-else
-    echo "WARN: conda.sh not found at \${CONDA_SH_PATH}. Trying common alternatives..."
-    if [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then source "$HOME/miniconda3/etc/profile.d/conda.sh"; echo "Sourced $HOME/miniconda3/etc/profile.d/conda.sh";
-    elif [ -f "$HOME/anaconda3/etc/profile.d/conda.sh" ]; then source "$HOME/anaconda3/etc/profile.d/conda.sh"; echo "Sourced $HOME/anaconda3/etc/profile.d/conda.sh";
-    elif [ -f "/opt/conda/etc/profile.d/conda.sh" ]; then source "/opt/conda/etc/profile.d/conda.sh"; echo "Sourced /opt/conda/etc/profile.d/conda.sh";
-    else echo "ERROR: conda.sh not found. Conda environment activation will likely fail."; fi
-fi
-
-echo "Attempting to activate Conda environment: \${CONDA_ENV_NAME_JS}"
+echo "Sourcing Conda..."
+if [ -f "\${CONDA_SH_PATH}" ]; then source "\${CONDA_SH_PATH}"; else echo "WARN: conda.sh not found at \${CONDA_SH_PATH}"; fi
+echo "Activating Env: \${CONDA_ENV_NAME_JS}"
 conda activate \${CONDA_ENV_NAME_JS}
-if [ "$CONDA_DEFAULT_ENV" != "\${CONDA_ENV_NAME_JS}" ]; then
-    echo "ERROR: Failed to activate conda environment '\${CONDA_ENV_NAME_JS}'. Current: $CONDA_DEFAULT_ENV. Expected: \${CONDA_ENV_NAME_JS}";
-else echo "Successfully activated conda environment: \${CONDA_ENV_NAME_JS}. Python: $(which python) ($(python --version))"; fi
-
-export MAX_JOBS=16 HF_TOKEN="\${hfToken}" VLLM_USE_TRITON_FLASH_ATTN="True" VLLM_CONFIGURE_LOGGING=0 VLLM_NO_USAGE_STATS="True" VLLM_DO_NOT_TRACK="True" VLLM_USE_V1=1 
-echo -e "Starting vLLM server with command:\\n\${vllmServeCommand}"
-\${vllmServeCommand}
-echo "=================================================================="
-echo "vLLM Server command launched. Check Slurm logs in \${seraphimScriptsDirForSlurm}"
-echo "Job finished script execution at $(date)"
-echo "=================================================================="
+if [ "$CONDA_DEFAULT_ENV" != "\${CONDA_ENV_NAME_JS}" ]; then echo "ERROR: Failed to activate conda env."; else echo "Env activated."; fi
+export HF_TOKEN="\${hfToken}" VLLM_USE_TRITON_FLASH_ATTN="True" VLLM_CONFIGURE_LOGGING=0 VLLM_NO_USAGE_STATS="True" VLLM_DO_NOT_TRACK="True" VLLM_USE_V1=1 
+echo -e "Starting vLLM:\\n\${vllmServeCommand}"
+# Ensure the command is correctly passed for background execution
+\${vllmServeCommand} &
+VLLM_PID=$!
+echo "vLLM PID: \${VLLM_PID}"
+sleep 15
+echo "****************** Endpoint Info ******************"
+echo " Job ID    : \${SLURM_JOB_ID}"
+echo " Model     : \${selectedModel}"
+echo " Node      : \$(hostname -f) (\$(hostname -s))"
+echo " Port      : \${servicePort}"
+echo " Access URL: http://\$(hostname -f):\${servicePort}"
+echo " Docs URL  : http://\$(hostname -f):\${servicePort}/docs"
+echo "***************************************************"
+wait \${VLLM_PID}
+EXIT_CODE=$?
+echo "---- SERAPHIM Job End: \${SLURM_JOB_ID} (vLLM Exit Code: \${EXIT_CODE}) ----"
 \`;
+            // --- Display Script ---
             const deployScriptName = "deploy_vllm_job.slurm";
-            outputDiv.textContent = \`To deploy, save the following content as \${SCRIPTS_DIR_JS}/\${deployScriptName}:\n\n-------------------------------------\n\${sbatchScriptContent}\n-------------------------------------\n\nThen make it executable and submit:\n\nchmod +x \${SCRIPTS_DIR_JS}/\${deployScriptName}\nsbatch \${SCRIPTS_DIR_JS}/\${deployScriptName}\n\nOutput and error files will be in \${SCRIPTS_DIR_JS}\`;
+            let currentOutputContent = outputDiv.textContent.startsWith("ℹ️") ? outputDiv.textContent + "\n\n" : "";
+            currentOutputContent += \`Deployment script for '\${selectedModel}' generated.
+Save as \${SCRIPTS_DIR_JS}/\${deployScriptName}:\n\n-------------------------------------\n\${sbatchScriptContent}\n-------------------------------------\n\nRun:\nchmod +x \${SCRIPTS_DIR_JS}/\${deployScriptName}\nsbatch \${SCRIPTS_DIR_JS}/\${deployScriptName}\n\nCheck Slurm output file for endpoint details.\`;
+             outputDiv.textContent = currentOutputContent;
+            console.log("SERAPHIM_DEBUG: sbatch script content generated.");
+        }
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("SERAPHIM_DEBUG: DOM fully loaded and parsed.");
+            populateStaticModels(); 
+            const deployBtn = document.getElementById('deploy-button');
+            const refreshBtn = document.getElementById('refresh-endpoints-button');
+            if(deployBtn) { deployBtn.addEventListener('click', handleDeployClick); console.log("SERAPHIM_DEBUG: Deploy listener added."); } 
+            else { console.error("SERAPHIM_DEBUG: Deploy button not found!"); }
+            if(refreshBtn) { refreshBtn.addEventListener('click', refreshDeployedEndpoints); console.log("SERAPHIM_DEBUG: Refresh listener added."); } 
+            else { console.error("SERAPHIM_DEBUG: Refresh button not found!"); }
         });
-        // document.addEventListener('DOMContentLoaded', fetchModels); // Fetch on load removed, now button triggered
     </script>
 </body>
 </html>

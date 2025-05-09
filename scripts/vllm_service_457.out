@@ -1,0 +1,45 @@
+Current ulimit -n (soft): 4096
+Current ulimit -n (hard): 51200
+Successfully set ulimit -n to 10240
+==================================================================
+✝ SERAPHIM vLLM Deployment Job - SLURM PREP ✝
+Job Start Time: Fri May  9 04:29:13 PM UTC 2025
+Job ID: 457 running on Node: ki-g0002.rz.fh-ingolstadt.de (Short: ki-g0002)
+Slurm Output/Error files will be in: /home/aimotion_api/SERAPHIM/scripts/
+Model: meta-llama/Llama-2-7b-chat-hf
+Target Service Port: 8000
+Conda Env: seraphim_vllm_env
+Max Model Length: 4096 (adjusted for model compatibility)
+==================================================================
+Sourcing Conda from: /home/aimotion_api/anaconda3/etc/profile.d/conda.sh
+Activating Conda Environment: seraphim_vllm_env
+Conda environment 'seraphim_vllm_env' activated. Path: /home/aimotion_api/anaconda3/envs/seraphim_vllm_env
+HF_TOKEN not provided.
+
+Starting vLLM API Server in the background...
+Command to be executed:
+vllm serve meta-llama/Llama-2-7b-chat-hf --host 0.0.0.0     --port 8000     --trust-remote-code     --max-model-len 4096
+vLLM service output (including API endpoint) will be logged to: /home/aimotion_api/SERAPHIM/scripts/vllm_logs/vllm_service_457_vllm_service.log
+vLLM Service potentially started with PID: 2460. Waiting a few seconds for initialization...
+vLLM process 2460 appears to be running.
+Initial logs should be available in /home/aimotion_api/SERAPHIM/scripts/vllm_logs/vllm_service_457_vllm_service.log
+
+==================================================================
+✝ SERAPHIM vLLM Deployment Job - SERVICE STATUS ✝
+Job ID: 457 on Node: ki-g0002.rz.fh-ingolstadt.de (Short: ki-g0002)
+Model: meta-llama/Llama-2-7b-chat-hf
+Configured Service Port: 8000
+vLLM Service Log File: /home/aimotion_api/SERAPHIM/scripts/vllm_logs/vllm_service_457_vllm_service.log
+---
+The vLLM service is running in the background (PID: 2460).
+To find the API endpoint:
+  1. Check the vLLM log: cat /home/aimotion_api/SERAPHIM/scripts/vllm_logs/vllm_service_457_vllm_service.log
+  2. Look for lines like 'Uvicorn running on http://<ip_address>:8000'
+  3. The API will be accessible on the node ki-g0002 at that address.
+     Typically: http://ki-g0002:8000
+     OpenAI API Docs (Swagger UI): http://ki-g0002:8000/docs
+
+To stop the service manually (on the node ki-g0002):
+  kill 2460
+==================================================================
+Slurm script finished its main tasks. If the vLLM service started successfully, it (PID: 2460) should continue in the background.

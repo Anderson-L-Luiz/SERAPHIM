@@ -1,0 +1,41 @@
+==================================================================
+✝ SERAPHIM vLLM Deployment Job - SLURM PREP ✝
+Job Start Time: Thu May  8 02:27:08 PM UTC 2025
+Job ID: 454 running on Node: ki-g0002.rz.fh-ingolstadt.de (Short: ki-g0002)
+Slurm Output/Error files will be in: /home/aimotion_api/SERAPHIM/scripts/
+Model: meta-llama/Llama-2-7b-chat-hf
+Target Service Port: 8000
+Conda Env: seraphim_vllm_env
+==================================================================
+Sourcing Conda from: /home/aimotion_api/anaconda3/etc/profile.d/conda.sh
+Activating Conda Environment: seraphim_vllm_env
+Conda environment 'seraphim_vllm_env' activated. Path: /home/aimotion_api/anaconda3/envs/seraphim_vllm_env
+HF_TOKEN not provided.
+
+Starting vLLM API Server in the background...
+Command to be executed:
+vllm serve meta-llama/Llama-2-7b-chat-hf --host 0.0.0.0     --port 8000     --trust-remote-code     --max-model-len 16384
+vLLM service output (including API endpoint) will be logged to: /home/aimotion_api/SERAPHIM/scripts/vllm_logs/vllm_service_454_vllm_service.log
+vLLM Service potentially started with PID: 2923304. Waiting a few seconds for initialization...
+ERROR: vLLM process 2923304 does not seem to be running. Check /home/aimotion_api/SERAPHIM/scripts/vllm_logs/vllm_service_454_vllm_service.log for errors.
+
+==================================================================
+✝ SERAPHIM vLLM Deployment Job - SERVICE STATUS ✝
+Job ID: 454 on Node: ki-g0002.rz.fh-ingolstadt.de (Short: ki-g0002)
+Model: meta-llama/Llama-2-7b-chat-hf
+Configured Service Port: 8000
+vLLM Service Log File: /home/aimotion_api/SERAPHIM/scripts/vllm_logs/vllm_service_454_vllm_service.log
+---
+The vLLM service is running in the background (PID: 2923304).
+To find the API endpoint:
+  1. Check the vLLM log: cat /home/aimotion_api/SERAPHIM/scripts/vllm_logs/vllm_service_454_vllm_service.log
+  2. Look for lines like 'Uvicorn running on http://<ip_address>:8000'
+  3. The API will be accessible on the node ki-g0002 at that address.
+     Typically: http://ki-g0002:8000
+     OpenAI API Docs (Swagger UI): http://ki-g0002:8000/docs
+
+To stop the service manually (on the node ki-g0002):
+  kill 2923304
+  (Or use 'scancel 454' if you want Slurm to handle termination signals, though nohup detaches it)
+==================================================================
+Slurm script finished its main tasks. The vLLM service (PID: 2923304) should continue in the background.
