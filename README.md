@@ -1,5 +1,7 @@
 # SERAPHIM: Scalable Engine for Reasoning, Analysis, Prediction, Hosting, and Intelligent Modeling
 
+Inspiration: The Seraphim are exalted beings of immense power who dwell in the closest proximity to the throne of God. Their many wings serve a multitude of versatile functions enabling them to guide the praises and prayers of those in awe of divinity, and to channel grace toward souls yearning for miracles.
+
 **Version:** 1.3 (Foreground Slurm Service with Backend Integration)
 **Author:** Anderson de Lima Luiz
 
