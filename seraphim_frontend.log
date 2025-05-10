@@ -1,0 +1,4 @@
+172.18.3.2 - - [10/May/2025 10:01:12] "GET /seraphim_deploy.html HTTP/1.1" 200 -
+172.18.3.2 - - [10/May/2025 10:01:12] "GET /seraphim_logic.js HTTP/1.1" 200 -
+172.18.3.2 - - [10/May/2025 10:03:48] "GET /seraphim_deploy.html HTTP/1.1" 304 -
+172.18.3.2 - - [10/May/2025 10:03:48] "GET /seraphim_logic.js HTTP/1.1" 304 -

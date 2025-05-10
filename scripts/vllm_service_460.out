@@ -1,0 +1,26 @@
+Current ulimit -n (soft): 4096
+Current ulimit -n (hard): 51200
+Successfully set ulimit -n to 10240
+==================================================================
+✝ SERAPHIM vLLM Deployment Job - SLURM PREP ✝
+Job Start Time: Fri May  9 05:30:12 PM UTC 2025
+Job ID: 460 running on Node: ki-g0002.rz.fh-ingolstadt.de (Short: ki-g0002)
+Slurm Output/Error files will be in: /home/aimotion_api/SERAPHIM/scripts/
+Model: meta-llama/Llama-2-7b-chat-hf
+Target Service Port: 8000
+Conda Env: seraphim_vllm_env
+Max Model Length: 4096 (adjusted for model compatibility)
+vLLM service will run in the foreground of this Slurm job.
+==================================================================
+Sourcing Conda from: /home/aimotion_api/anaconda3/etc/profile.d/conda.sh
+Activating Conda Environment: seraphim_vllm_env
+Conda environment 'seraphim_vllm_env' activated. Path: /home/aimotion_api/anaconda3/envs/seraphim_vllm_env
+HF_TOKEN not provided.
+
+Starting vLLM API Server in the foreground...
+Command to be executed:
+vllm serve meta-llama/Llama-2-7b-chat-hf --host 0.0.0.0     --port 8000     --trust-remote-code     --max-model-len 4096
+vLLM service output (including API endpoint and any errors) will be in Slurm output/error files:
+Output: /home/aimotion_api/SERAPHIM/scripts/vllm_service_460.out
+Error: /home/aimotion_api/SERAPHIM/scripts/vllm_service_460.err
+--- vLLM Service Starting ---

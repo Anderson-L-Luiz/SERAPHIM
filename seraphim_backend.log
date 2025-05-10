@@ -1,0 +1,16 @@
+[2025-05-10 10:01:01,188] [INFO] Starting SERAPHIM Backend Server on http://0.0.0.0:8870
+INFO:     Started server process [748248]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8870 (Press CTRL+C to quit)
+INFO:     172.18.3.2:65250 - "OPTIONS /api/deploy HTTP/1.1" 200 OK
+[2025-05-10 10:01:30,992] [INFO] Received deployment request from 172.18.3.2 for model: mistralai/Mistral-7B-Instruct-v0.1
+[2025-05-10 10:01:30,992] [INFO] Slurm script saved to /home/aimotion_api/SERAPHIM/scripts/deploy_vllm_service_d9a6f68c.slurm
+[2025-05-10 10:01:30,992] [INFO] Submitting Slurm job: sbatch /home/aimotion_api/SERAPHIM/scripts/deploy_vllm_service_d9a6f68c.slurm
+[2025-05-10 10:01:31,001] [INFO] Sbatch successful. Output: 'Submitted batch job 462', Parsed Job ID: 462
+INFO:     172.18.3.2:65250 - "POST /api/deploy HTTP/1.1" 200 OK
+[2025-05-10 10:04:02,576] [INFO] Received deployment request from 172.18.3.2 for model: mistralai/Mistral-7B-Instruct-v0.1
+[2025-05-10 10:04:02,576] [INFO] Slurm script saved to /home/aimotion_api/SERAPHIM/scripts/deploy_vllm_service_ae4c092c.slurm
+[2025-05-10 10:04:02,576] [INFO] Submitting Slurm job: sbatch /home/aimotion_api/SERAPHIM/scripts/deploy_vllm_service_ae4c092c.slurm
+[2025-05-10 10:04:02,586] [INFO] Sbatch successful. Output: 'Submitted batch job 463', Parsed Job ID: 463
+INFO:     172.18.3.2:65295 - "POST /api/deploy HTTP/1.1" 200 OK

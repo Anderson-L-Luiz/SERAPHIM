@@ -7,159 +7,63 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #029702; /* Electric blue */
-            --secondary-color: #f3cb00; /* Lighter cyan/blue */
-            --accent-color: #ffcc00; /* Gold accent */
-            --bg-color: #1c1c1e; /* Dark background */
-            --card-bg-color: #2c2c2e; /* Slightly lighter card background */
-            --text-color: #e5e5e7; /* Light text */
-            --text-muted-color: #8e8e93;
-            --border-color: #3a3a3c;
-            --font-body: 'Exo 2', sans-serif;
-            --font-heading: 'Orbitron', sans-serif; /* Tech font */
+            --primary-color: #029702; --secondary-color: #f3cb00; --accent-color: #ffcc00;
+            --bg-color: #1c1c1e; --card-bg-color: #2c2c2e; --text-color: #e5e5e7;
+            --text-muted-color: #8e8e93; --border-color: #3a3a3c;
+            --font-body: 'Exo 2', sans-serif; --font-heading: 'Orbitron', sans-serif;
+            --success-color: #02c702; --warning-color: #f3cb00; --error-color: #ff3b30;
         }
-        body {
-            font-family: var(--font-body);
-            margin: 0; padding:0; background-color: var(--bg-color);
-            color: var(--text-color); display: flex; flex-direction: column;
-            min-height: 100vh; font-size: 16px; line-height: 1.6;
-        }
-        .header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: white; padding: 20px 30px; text-align: center;
-            border-bottom: 3px solid var(--accent-color);
-            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-        }
-        .header h1 {
-            margin: 0; font-family: var(--font-heading); font-size: 2.3em;
-            font-weight: 700; letter-spacing: 2px; display: flex; align-items: center; justify-content: center; gap: 15px;
-        }
+        body { font-family: var(--font-body); margin: 0; padding:0; background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; min-height: 100vh; font-size: 16px; line-height: 1.6; }
+        .header { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); color: white; padding: 20px 30px; text-align: center; border-bottom: 3px solid var(--accent-color); text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+        .header h1 { margin: 0; font-family: var(--font-heading); font-size: 2.3em; font-weight: 700; letter-spacing: 2px; display: flex; align-items: center; justify-content: center; gap: 15px; }
         .header p { margin: 8px 0 0; font-size: 0.95em; opacity: 0.9; font-weight: 300;}
         .main-container { display: flex; flex-wrap: wrap; padding: 20px; gap: 20px; flex-grow: 1; max-width: 1300px; margin: 20px auto; width: 100%; box-sizing: border-box;}
-        .form-container, .endpoints-container {
-            background-color: var(--card-bg-color); padding: 25px; border-radius: 10px;
-            border: 1px solid var(--border-color); box-sizing: border-box;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
+        .form-container, .endpoints-container { background-color: var(--card-bg-color); padding: 25px; border-radius: 10px; border: 1px solid var(--border-color); box-sizing: border-box; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
         .form-container { flex: 2; min-width: 400px; }
         .endpoints-container { flex: 1; min-width: 350px; }
-        h3 {
-            font-family: var(--font-heading); color: var(--secondary-color);
-            border-bottom: 1px solid var(--accent-color); padding-bottom: 10px;
-            margin-top: 0; margin-bottom: 20px; font-size: 1.4em; letter-spacing: 1px;
-            display: flex; align-items: center; gap: 10px;
-        }
+        h3 { font-family: var(--font-heading); color: var(--secondary-color); border-bottom: 1px solid var(--accent-color); padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; font-size: 1.4em; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
         label { display: block; margin-top: 15px; margin-bottom: 5px; font-weight: 600; font-size: 0.9em; color: var(--text-muted-color); text-transform: uppercase; letter-spacing: 0.5px;}
-        select, input[type="text"], input[type="number"], input[type="email"], input[type="password"] {
-            width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 5px;
-            border: 1px solid var(--border-color); box-sizing: border-box; font-size: 0.95em;
-            background-color: #3a3a3c; color: var(--text-color);
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-        select:focus, input:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
-            outline: none; background-color: #4a4a4e;
-        }
-        button {
-            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-            color: white; padding: 12px 20px; cursor: pointer; border: none; border-radius: 5px;
-            font-weight: bold; font-size: 1em; text-transform: uppercase; letter-spacing: 0.8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: all 0.3s ease; margin-top: 10px;
-            width: 100%; /* Make buttons full width */
-        }
-        button:hover, button:focus {
-            background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); transform: translateY(-2px);
-        }
-        #output {
-            margin-top: 20px; padding: 15px; background-color: #1c1c1e; /* Darker background for output */
-            border: 1px solid var(--border-color); border-radius: 6px; white-space: pre-wrap;
-            word-wrap: break-word; font-size: 0.9em; max-height: 400px; overflow-y: auto;
-            line-height: 1.6; font-family: 'Courier New', Courier, monospace; color: #a5d6ff; /* Light blue text for code */
-        }
+        select, input[type="text"], input[type="number"], input[type="email"], input[type="password"] { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 5px; border: 1px solid var(--border-color); box-sizing: border-box; font-size: 0.95em; background-color: #3a3a3c; color: var(--text-color); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        select:focus, input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3); outline: none; background-color: #4a4a4e; }
+        button { background: linear-gradient(to right, var(--primary-color), var(--secondary-color)); color: white; padding: 12px 20px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; font-size: 1em; text-transform: uppercase; letter-spacing: 0.8px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: all 0.3s ease; margin-top: 10px; width: 100%; }
+        button:hover:not(:disabled), button:focus:not(:disabled) { background: linear-gradient(to right, var(--secondary-color), var(--primary-color)); box-shadow: 0 4px 10px rgba(0,0,0,0.3); transform: translateY(-2px); }
+        button:disabled { background: #555; cursor: not-allowed; opacity: 0.7; }
+        #output { margin-top: 20px; padding: 15px; background-color: #1c1c1e; border: 1px solid var(--border-color); border-radius: 6px; white-space: pre-wrap; word-wrap: break-word; font-size: 0.9em; max-height: 400px; overflow-y: auto; line-height: 1.6; font-family: 'Courier New', Courier, monospace; color: var(--text-color); }
         .slurm-options h3 { margin-top: 25px; font-size: 1.2em;}
         .slurm-options label { font-weight: 400; font-size: 0.85em; margin-top: 8px; }
-
-        .endpoints-container #refresh-endpoints-button {
-            background: linear-gradient(to right, #ffcc00, #ff9500); /* Gold/Orange gradient */
-            margin-bottom: 15px;
-        }
-        .endpoints-container #refresh-endpoints-button:hover {
-            background: linear-gradient(to right, #ff9500, #ffcc00);
-        }
-        .endpoint-item {
-            background-color: #3a3a3c; border: 1px solid #4a4a4e; padding: 15px;
-            margin-bottom: 10px; border-radius: 6px; font-size: 0.9em; line-height: 1.6;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
-        }
-        .endpoint-item strong { color: var(--secondary-color); } /* Lighter blue */
-        .endpoint-item a { color: var(--accent-color); text-decoration: none; font-weight: bold;}
-        .endpoint-item a:hover { text-decoration: underline; color: #ffd633; /* Brighter gold */ }
-
-        .footer {
-            text-align: center; padding: 20px; background-color: #0e0e0f; /* Even darker footer */
-            color: #8e8e93; font-size: 0.9em; margin-top: auto;
-            border-top: 3px solid var(--accent-color);
-        }
-        .icon { margin-right: 8px; font-size: 1.2em; vertical-align: middle;} /* For unicode symbols */
+        .endpoints-container #refresh-endpoints-button { background: linear-gradient(to right, #ffcc00, #ff9500); margin-bottom: 15px; }
+        .endpoints-container #refresh-endpoints-button:hover { background: linear-gradient(to right, #ff9500, #ffcc00); }
+        .footer { text-align: center; padding: 20px; background-color: #0e0e0f; color: #8e8e93; font-size: 0.9em; margin-top: auto; border-top: 3px solid var(--accent-color); }
+        .icon { margin-right: 8px; font-size: 1.2em; vertical-align: middle;}
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1><span class="icon"></span> SERAPHIM <span class="icon"></span></h1>
-        <p>Scalable Engine for Reasoning, Analysis, Prediction, Hosting, and Intelligent Modeling</p>
-    </div>
-
+    <div class="header"><h1><span class="icon"></span> SERAPHIM <span class="icon"></span></h1><p>Scalable Engine for Reasoning, Analysis, Prediction, Hosting, and Intelligent Modeling</p></div>
     <div class="main-container">
         <div class="form-container">
-            <h3><span class="icon">⚙️</span> Deploy New vLLM Instance</h3>
-
-            <label for="model-select">Select Model:</label>
-            <select id="model-select">
-                <option value="">-- Select a Model --</option>
-            </select>
-
-            <label for="service-port">Service Port (on Slurm node):</label>
-            <input type="number" id="service-port" value="8000" min="1024" max="65535"/>
-
-            <label for="hf-token">Hugging Face Token (Optional):</label>
-            <input type="password" id="hf-token" placeholder="Needed for Llama, gated models, etc."/>
-
+            <h3><span class="icon">⚙️</span> Deploy New vLLM Instance via Backend</h3>
+            <label for="model-select">Select Model:</label><select id="model-select"><option value="">-- Select a Model --</option></select>
+            <label for="service-port">Service Port (on Slurm node):</label><input type="number" id="service-port" value="8000" min="1024" max="65535"/>
+            <label for="hf-token">Hugging Face Token (Optional):</label><input type="password" id="hf-token" placeholder="Needed for Llama, gated models, etc."/>
             <div class="slurm-options">
                 <h3>Slurm Configuration</h3>
-                <label for="job-name">Job Name:</label>
-                <input type="text" id="job-name" value="vllm_service"/>
-                <label for="time-limit">Time Limit (HH:MM:SS):</label>
-                <input type="text" id="time-limit" value="23:59:59"/>
-                <label for="gpus">GPUs (e.g., 1 or a100:1):</label>
-                <input type="text" id="gpus" value="1"/>
-                <label for="cpus-per-task">CPUs per Task:</label>
-                <input type="number" id="cpus-per-task" value="4" min="1"/>
-                <label for="mem">Memory (e.g., 32G):</label>
-                <input type="text" id="mem" value="32G"/>
-                <label for="mail-user">Email Notify (Optional):</label>
-                <input type="email" id="mail-user" placeholder="your_email@example.com"/>
+                <label for="job-name">Job Name:</label><input type="text" id="job-name" value="vllm_service"/>
+                <label for="time-limit">Time Limit (HH:MM:SS):</label><input type="text" id="time-limit" value="23:59:59"/>
+                <label for="gpus">GPUs (e.g., 1 or a100:1):</label><input type="text" id="gpus" value="1"/>
+                <label for="cpus-per-task">CPUs per Task:</label><input type="number" id="cpus-per-task" value="4" min="1"/>
+                <label for="mem">Memory (e.g., 32G):</label><input type="text" id="mem" value="32G"/>
+                <label for="mail-user">Email Notify (Optional):</label><input type="email" id="mail-user" placeholder="your_email@example.com"/>
             </div>
-
-            <button id="deploy-button">Generate Slurm Script</button>
-            <div id="output">Select model & click button to generate script.</div>
+            <button id="deploy-button">Deploy to Slurm via Backend</button>
+            <div id="output">Configure and click deploy. Status will appear here.</div>
         </div>
-
         <div class="endpoints-container">
             <h3><span class="icon">📡</span> Active Deployments (Placeholder)</h3>
             <button id="refresh-endpoints-button">Refresh Status</button>
-            <div id="deployed-endpoints-list">
-                <p>Requires backend integration to list active Slurm jobs and parse vLLM service logs for endpoint details.</p>
-            </div>
+            <div id="deployed-endpoints-list"><p>Functionality to list active Slurm jobs requires further backend development.</p></div>
         </div>
     </div>
-
-    <div class="footer">
-        ✧ SERAPHIM CORE Interface v1.1 ✧ System Online ✧
-    </div>
-
+    <div class="footer">✧ SERAPHIM CORE Interface v1.3 (Foreground Slurm Service) ✧ System Online ✧</div>
     <script src="seraphim_logic.js" defer></script>
-
 </body>
 </html>

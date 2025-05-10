@@ -1,31 +1,30 @@
 # Core vLLM and serving
-vllm>=0.4.0 # Using a recent version, adjust as needed
-uvicorn>=0.20.0
+vllm>=0.4.0
+# Backend requirements
 fastapi>=0.100.0
-# Dependencies likely needed by vLLM or models (based on previous full list)
+uvicorn[standard]>=0.20.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+# Other vLLM dependencies
 aiohappyeyeballs>=2.4.0
 aiohttp>=3.8.0
 aiohttp-cors>=0.7.0
 huggingface-hub>=0.20.0
 numpy>=1.23.0
-openai>=1.0.0 # For client-side interaction if needed, and vLLM mimics its API
+openai>=1.0.0
 packaging>=23.0
 prometheus-client>=0.17.0
-protobuf>=4.20.0 # Check compatibility with pydantic v2 if issues arise
-pydantic>=2.0.0 # vLLM typically requires Pydantic v2 for recent versions
+protobuf>=4.20.0
 pydantic_core>=2.0.0
-python-dotenv>=1.0.0
 PyYAML>=6.0.0
-ray>=2.5.0 # Check vLLM docs for compatible Ray version if using distributed
+ray>=2.5.0
 requests>=2.30.0
 safetensors>=0.4.0
 sentencepiece>=0.1.98
-tokenizers>=0.14.0 # Check vLLM compatibility
-torch>=2.1.0 # Handled separately below for CUDA version
-torchaudio>=2.1.0 # Handled separately below
-torchvision>=0.16.0 # Handled separately below
-transformers>=4.35.0 # Keep reasonably up-to-date with vLLM
+tokenizers>=0.14.0
+torch>=2.1.0
+torchaudio>=2.1.0
+torchvision>=0.16.0
+transformers>=4.35.0
 typing_extensions>=4.8.0
-# Optional GPU acceleration (Install if hardware supports & compilation works)
-# flash-attn
-xformers>=0.0.22 # Often beneficial with NVIDIA GPUs, check vLLM docs for recommended version
+xformers>=0.0.22

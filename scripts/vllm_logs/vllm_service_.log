@@ -1,0 +1,32 @@
+Found ulimit of 4096 and failed to automatically increase with error current limit exceeds maximum limit. This can cause fd limit errors like `OSError: [Errno 24] Too many open files`. Consider increasing with ulimit -n
+Traceback (most recent call last):
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/bin/vllm", line 8, in <module>
+    sys.exit(main())
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/entrypoints/cli/main.py", line 53, in main
+    args.dispatch_function(args)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/entrypoints/cli/serve.py", line 27, in cmd
+    uvloop.run(run_server(args))
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/uvloop/__init__.py", line 82, in run
+    return loop.run_until_complete(wrapper())
+  File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/uvloop/__init__.py", line 61, in wrapper
+    return await main
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/entrypoints/openai/api_server.py", line 1078, in run_server
+    async with build_async_engine_client(args) as engine_client:
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/entrypoints/openai/api_server.py", line 146, in build_async_engine_client
+    async with build_async_engine_client_from_engine_args(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/entrypoints/openai/api_server.py", line 166, in build_async_engine_client_from_engine_args
+    vllm_config = engine_args.create_engine_config(usage_context=usage_context)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/engine/arg_utils.py", line 1099, in create_engine_config
+    model_config = self.create_model_config()
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/engine/arg_utils.py", line 987, in create_model_config
+    return ModelConfig(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/config.py", line 508, in __init__
+    self.max_model_len = _get_and_verify_max_len(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/config.py", line 3106, in _get_and_verify_max_len
+    raise ValueError(
+ValueError: User-specified max_model_len (16384) is greater than the derived max_model_len (max_position_embeddings=2048 or model_max_length=None in model's config.json). This may lead to incorrect model outputs or CUDA errors. To allow overriding this maximum, set the env var VLLM_ALLOW_LONG_MAX_MODEL_LEN=1
