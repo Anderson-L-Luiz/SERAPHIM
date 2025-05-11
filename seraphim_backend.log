@@ -1,16 +1,34 @@
-[2025-05-10 10:01:01,188] [INFO] Starting SERAPHIM Backend Server on http://0.0.0.0:8870
-INFO:     Started server process [748248]
+[2025-05-10 18:31:05,935] [INFO] Starting SERAPHIM Backend Server on http://0.0.0.0:8870
+INFO:     Started server process [1109110]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8870 (Press CTRL+C to quit)
-INFO:     172.18.3.2:65250 - "OPTIONS /api/deploy HTTP/1.1" 200 OK
-[2025-05-10 10:01:30,992] [INFO] Received deployment request from 172.18.3.2 for model: mistralai/Mistral-7B-Instruct-v0.1
-[2025-05-10 10:01:30,992] [INFO] Slurm script saved to /home/aimotion_api/SERAPHIM/scripts/deploy_vllm_service_d9a6f68c.slurm
-[2025-05-10 10:01:30,992] [INFO] Submitting Slurm job: sbatch /home/aimotion_api/SERAPHIM/scripts/deploy_vllm_service_d9a6f68c.slurm
-[2025-05-10 10:01:31,001] [INFO] Sbatch successful. Output: 'Submitted batch job 462', Parsed Job ID: 462
-INFO:     172.18.3.2:65250 - "POST /api/deploy HTTP/1.1" 200 OK
-[2025-05-10 10:04:02,576] [INFO] Received deployment request from 172.18.3.2 for model: mistralai/Mistral-7B-Instruct-v0.1
-[2025-05-10 10:04:02,576] [INFO] Slurm script saved to /home/aimotion_api/SERAPHIM/scripts/deploy_vllm_service_ae4c092c.slurm
-[2025-05-10 10:04:02,576] [INFO] Submitting Slurm job: sbatch /home/aimotion_api/SERAPHIM/scripts/deploy_vllm_service_ae4c092c.slurm
-[2025-05-10 10:04:02,586] [INFO] Sbatch successful. Output: 'Submitted batch job 463', Parsed Job ID: 463
-INFO:     172.18.3.2:65295 - "POST /api/deploy HTTP/1.1" 200 OK
+INFO:     172.18.3.7:54994 - "GET /api/active_deployments HTTP/1.1" 200 OK
+INFO:     172.18.3.7:55028 - "OPTIONS /api/deploy HTTP/1.1" 200 OK
+[2025-05-10 18:35:15,854] [INFO] Deployment request for model: Qwen/Qwen2-1.5B-Instruct
+[2025-05-10 18:35:15,854] [INFO] Slurm script saved: /home/aimotion_api/SERAPHIM/scripts/deploy_vllm_service_bb3ea3f6.slurm
+[2025-05-10 18:35:15,865] [INFO] Sbatch successful. Output: 'Submitted batch job 587', Parsed Job ID: 587
+INFO:     172.18.3.7:55028 - "POST /api/deploy HTTP/1.1" 200 OK
+INFO:     172.18.3.7:55028 - "GET /api/active_deployments HTTP/1.1" 200 OK
+INFO:     172.18.3.7:55757 - "OPTIONS /api/deploy HTTP/1.1" 200 OK
+[2025-05-10 18:47:57,328] [INFO] Deployment request for model: Qwen/Qwen2-1.5B-Instruct
+[2025-05-10 18:47:57,329] [INFO] Slurm script saved: /home/aimotion_api/SERAPHIM/scripts/deploy_vllm_service_216f7bd6.slurm
+[2025-05-10 18:47:57,339] [INFO] Sbatch successful. Output: 'Submitted batch job 588', Parsed Job ID: 588
+INFO:     172.18.3.7:55757 - "POST /api/deploy HTTP/1.1" 200 OK
+INFO:     172.18.3.7:55757 - "GET /api/active_deployments HTTP/1.1" 200 OK
+[2025-05-10 18:51:21,956] [INFO] Deployment request for model: deepseek-ai/deepseek-llm-7b-chat
+[2025-05-10 18:51:21,957] [INFO] Slurm script saved: /home/aimotion_api/SERAPHIM/scripts/deploy_vllm_service_df675379.slurm
+[2025-05-10 18:51:21,967] [INFO] Sbatch successful. Output: 'Submitted batch job 589', Parsed Job ID: 589
+INFO:     172.18.3.7:55806 - "POST /api/deploy HTTP/1.1" 200 OK
+INFO:     172.18.3.7:55806 - "GET /api/active_deployments HTTP/1.1" 200 OK
+[2025-05-10 18:52:11,274] [INFO] Deployment request for model: deepseek-ai/deepseek-llm-7b-chat
+[2025-05-10 18:52:11,274] [INFO] Slurm script saved: /home/aimotion_api/SERAPHIM/scripts/deploy_vllm_service_acadfc13.slurm
+[2025-05-10 18:52:11,284] [INFO] Sbatch successful. Output: 'Submitted batch job 590', Parsed Job ID: 590
+INFO:     172.18.3.7:55816 - "POST /api/deploy HTTP/1.1" 200 OK
+INFO:     172.18.3.7:55816 - "GET /api/active_deployments HTTP/1.1" 200 OK
+[2025-05-10 18:53:01,038] [INFO] Deployment request for model: deepseek-ai/deepseek-llm-7b-chat
+[2025-05-10 18:53:01,038] [INFO] Slurm script saved: /home/aimotion_api/SERAPHIM/scripts/deploy_vllm_service_9b5efeed.slurm
+[2025-05-10 18:53:01,047] [INFO] Sbatch successful. Output: 'Submitted batch job 591', Parsed Job ID: 591
+INFO:     172.18.3.7:55818 - "POST /api/deploy HTTP/1.1" 200 OK
+INFO:     172.18.3.7:55818 - "GET /api/active_deployments HTTP/1.1" 200 OK
+INFO:     172.18.3.7:65219 - "GET /api/active_deployments HTTP/1.1" 200 OK

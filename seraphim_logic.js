@@ -1,33 +1,134 @@
 // seraphim_logic.js
-const BACKEND_API_URL = `http://${window.location.hostname}:8870/api/deploy`;
-const staticModels = [
-    { id: "mistralai/Mistral-7B-Instruct-v0.1", name: "Mistral-7B-Instruct-v0.1" },
-    { id: "meta-llama/Llama-2-7b-chat-hf", name: "Llama-2-7B-Chat-HF" },
-    { id: "google/gemma-7b-it", name: "Gemma-7B-IT (Google)" },
-    { id: "Qwen/Qwen2-7B-Instruct", name: "Qwen2-7B-Instruct" },
-    { id: "BAAI/AquilaChat-7B", name: "AquilaChat-7B (BAAI)"},
-    { id: "mistralai/Mixtral-8x7B-Instruct-v0.1", name: "Mixtral-8x7B-Instruct-v0.1" },
-    { id: "EleutherAI/gpt-j-6b", name: "GPT-J-6B (EleutherAI)"},
-    { id: "tiiuae/falcon-7b-instruct", name: "Falcon-7B-Instruct (TII UAE)"},
-    { id: "mistralai/Pixtral-12B-2409", name: "Pixtral-12B-2409 (Multimodal)" },
-    { id: "microsoft/phi-2", name: "Phi-2 (Microsoft)"}
-];
+const BACKEND_API_URL_DEPLOY = `http://${window.location.hostname}:8870/api/deploy`;
+const BACKEND_API_URL_ACTIVE = `http://${window.location.hostname}:8870/api/active_deployments`;
+const MODELS_FILE_URL = 'models.txt'; // Assumes models.txt is in the same directory as HTML
 
-function populateStaticModels() {
+let allModels = []; // To store all models fetched from models.txt
+
+async function fetchAndPopulateModels() {
+    console.log("SERAPHIM_DEBUG: Fetching models from", MODELS_FILE_URL);
     const modelSelect = document.getElementById('model-select');
-    if (!modelSelect) { console.error("SERAPHIM_DEBUG: 'model-select' not found!"); return; }
-    while (modelSelect.options.length > 1) { modelSelect.remove(modelSelect.options.length - 1); }
-    staticModels.forEach(model => {
+    const modelSearchInput = document.getElementById('model-search');
+    if (!modelSelect || !modelSearchInput) {
+        console.error("SERAPHIM_DEBUG: Model select or search input not found!");
+        return;
+    }
+    modelSelect.innerHTML = '<option value="">-- Loading models... --</option>'; // Clear previous options
+
+    try {
+        const response = await fetch(MODELS_FILE_URL);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch models.txt: ${response.status} ${response.statusText}`);
+        }
+        const text = await response.text();
+        const lines = text.split('\n');
+        allModels = []; // Reset global models array
+        lines.forEach(line => {
+            line = line.trim();
+            if (line && !line.startsWith('#')) { // Ignore empty lines and comments
+                const parts = line.split(',');
+                if (parts.length >= 2) {
+                    const modelId = parts[0].trim();
+                    const modelName = parts.slice(1).join(',').trim(); // Handle names with commas
+                    allModels.push({ id: modelId, name: modelName });
+                } else if (parts.length === 1 && parts[0]) { // Handle lines with only ID
+                     allModels.push({ id: parts[0], name: parts[0] });
+                }
+            }
+        });
+
+        if (allModels.length === 0) {
+            modelSelect.innerHTML = '<option value="">-- No models found in models.txt --</option>';
+            console.warn("SERAPHIM_DEBUG: No models parsed from models.txt or file is empty/incorrectly formatted.");
+            return;
+        }
+        
+        // Sort models by name for better UX
+        allModels.sort((a, b) => a.name.localeCompare(b.name));
+
+        populateModelDropdown(allModels); // Initial population with all models
+        console.log(`SERAPHIM_DEBUG: Successfully fetched and parsed ${allModels.length} models.`);
+
+    } catch (error) {
+        console.error("SERAPHIM_DEBUG: Error fetching or parsing models.txt:", error);
+        modelSelect.innerHTML = '<option value="">-- Error loading models --</option>';
+        const outputDiv = document.getElementById('output');
+        if(outputDiv) outputDiv.textContent = `❌ Error loading models from models.txt: ${error.message}`;
+    }
+}
+
+function populateModelDropdown(modelsToDisplay) {
+    const modelSelect = document.getElementById('model-select');
+    modelSelect.innerHTML = ''; // Clear existing options before populating
+
+    const placeholderOption = document.createElement('option');
+    placeholderOption.value = "";
+    placeholderOption.textContent = "-- Select a Model --";
+    modelSelect.appendChild(placeholderOption);
+
+    modelsToDisplay.forEach(model => {
         const option = document.createElement('option');
-        option.value = model.id; option.textContent = model.name;
+        option.value = model.id;
+        option.textContent = model.name; // Display name in dropdown
         modelSelect.appendChild(option);
     });
 }
 
-function refreshDeployedEndpoints() {
-    const listDiv = document.getElementById('deployed-endpoints-list');
-    if (listDiv) listDiv.innerHTML = "<p><em>Listing active jobs requires further backend integration.</em></p>";
+function filterModels() {
+    const searchTerm = document.getElementById('model-search').value.toLowerCase();
+    const filteredModels = allModels.filter(model => 
+        model.name.toLowerCase().includes(searchTerm) || model.id.toLowerCase().includes(searchTerm)
+    );
+    populateModelDropdown(filteredModels);
 }
+
+
+async function refreshDeployedEndpoints() {
+    console.log("SERAPHIM_DEBUG: Refreshing active deployments...");
+    const listDiv = document.getElementById('deployed-endpoints-list');
+    const refreshButton = document.getElementById('refresh-endpoints-button');
+    if (!listDiv || !refreshButton) {
+        console.error("SERAPHIM_DEBUG: UI elements for active deployments not found.");
+        return;
+    }
+    listDiv.innerHTML = "<p><em>🔄 Fetching active deployments...</em></p>";
+    refreshButton.disabled = true;
+
+    try {
+        const response = await fetch(BACKEND_API_URL_ACTIVE);
+        if (!response.ok) {
+            const errorResult = await response.json().catch(() => ({ detail: "Unknown error fetching active deployments." }));
+            throw new Error(`Failed to fetch active deployments: ${response.status} ${response.statusText} - ${errorResult.detail}`);
+        }
+        const deployments = await response.json();
+        
+        if (deployments.length === 0) {
+            listDiv.innerHTML = "<p>No active SERAPHIM vLLM deployments found for your user.</p>";
+        } else {
+            let html = '<ul>';
+            deployments.forEach(job => {
+                html += `<li class="endpoint-item">
+                    <strong>Job ID:</strong> ${job.job_id}<br/>
+                    <strong>Name:</strong> ${job.job_name || 'N/A'}<br/>
+                    <strong>Status:</strong> ${job.status || 'N/A'}<br/>
+                    <strong>Node(s):</strong> ${job.nodes || 'N/A'}<br/>
+                    <strong>User:</strong> ${job.user || 'N/A'}<br/>
+                    <strong>Time Used:</strong> ${job.time_used || 'N/A'}<br/>
+                    ${job.service_url ? `<strong>Service URL:</strong> <a href="${job.service_url}" target="_blank">${job.service_url}</a><br/>` : ''}
+                    ${job.slurm_output_file ? `<strong>Slurm Out:</strong> ${job.slurm_output_file}<br/>` : ''}
+                    </li>`;
+            });
+            html += '</ul>';
+            listDiv.innerHTML = html;
+        }
+    } catch (error) {
+        console.error("SERAPHIM_DEBUG: Error refreshing active deployments:", error);
+        listDiv.innerHTML = `<p style="color: var(--error-color);">❌ Error fetching active deployments: ${error.message}</p>`;
+    } finally {
+        refreshButton.disabled = false;
+    }
+}
+
 
 async function handleDeployClick() {
     const outputDiv = document.getElementById('output');
@@ -53,10 +154,9 @@ async function handleDeployClick() {
         outputDiv.style.color = "var(--warning-color, #f3cb00)";
         deployButton.disabled = false; deployButton.textContent = "Deploy to Slurm via Backend"; return;
     }
-    // Add more client-side validation as needed
 
     try {
-        const response = await fetch(BACKEND_API_URL, {
+        const response = await fetch(BACKEND_API_URL_DEPLOY, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(slurmConfig)
@@ -72,22 +172,34 @@ async function handleDeployClick() {
             msg += `   Error:  tail -f ${result.slurm_error_file_pattern || 'N/A'}\n\n`;
             msg += `ℹ️ ${result.monitoring_note || ''}`;
             outputDiv.textContent = msg;
+            refreshDeployedEndpoints(); 
         } else {
             outputDiv.style.color = "var(--error-color, #ff3b30)";
             outputDiv.textContent = `❌ Error (${response.status}): ${result.detail || response.statusText || 'Unknown backend error.'}`;
         }
     } catch (error) {
         outputDiv.style.color = "var(--error-color, #ff3b30)";
-        outputDiv.textContent = `❌ Network/Connection Error: ${error.message}. Is backend at ${BACKEND_API_URL} running?`;
+        outputDiv.textContent = `❌ Network/Connection Error: ${error.message}. Is backend at ${BACKEND_API_URL_DEPLOY} running?`;
     } finally {
         deployButton.disabled = false; deployButton.textContent = "Deploy to Slurm via Backend";
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    populateStaticModels();
+    fetchAndPopulateModels(); // Load models from file first
+    
+    const modelSearchInput = document.getElementById('model-search');
+    if (modelSearchInput) {
+        modelSearchInput.addEventListener('input', filterModels);
+    } else {
+        console.error("SERAPHIM_DEBUG: Model search input not found!");
+    }
+
     const deployBtn = document.getElementById('deploy-button');
     if (deployBtn) deployBtn.addEventListener('click', handleDeployClick);
+    
     const refreshBtn = document.getElementById('refresh-endpoints-button');
     if (refreshBtn) refreshBtn.addEventListener('click', refreshDeployedEndpoints);
+    
+    refreshDeployedEndpoints(); // Initial load of active deployments
 });

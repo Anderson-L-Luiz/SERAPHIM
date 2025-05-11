@@ -20,11 +20,23 @@
         .main-container { display: flex; flex-wrap: wrap; padding: 20px; gap: 20px; flex-grow: 1; max-width: 1300px; margin: 20px auto; width: 100%; box-sizing: border-box;}
         .form-container, .endpoints-container { background-color: var(--card-bg-color); padding: 25px; border-radius: 10px; border: 1px solid var(--border-color); box-sizing: border-box; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
         .form-container { flex: 2; min-width: 400px; }
-        .endpoints-container { flex: 1; min-width: 350px; }
+        .endpoints-container { flex: 1; min-width: 380px; max-height: 80vh; overflow-y: auto; }
         h3 { font-family: var(--font-heading); color: var(--secondary-color); border-bottom: 1px solid var(--accent-color); padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; font-size: 1.4em; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
         label { display: block; margin-top: 15px; margin-bottom: 5px; font-weight: 600; font-size: 0.9em; color: var(--text-muted-color); text-transform: uppercase; letter-spacing: 0.5px;}
+        #model-search { /* Style for the search input */
+            width: calc(100% - 24px); /* Match other inputs */
+            padding: 11px; margin-bottom: 8px; /* Spacing */
+            border-radius: 5px; border: 1px solid var(--border-color);
+            box-sizing: border-box; font-size: 0.95em;
+            background-color: #3a3a3c; color: var(--text-color);
+        }
+        #model-search:focus {
+             border-color: var(--primary-color);
+             box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
+             outline: none; background-color: #4a4a4e;
+        }
         select, input[type="text"], input[type="number"], input[type="email"], input[type="password"] { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 5px; border: 1px solid var(--border-color); box-sizing: border-box; font-size: 0.95em; background-color: #3a3a3c; color: var(--text-color); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
-        select:focus, input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3); outline: none; background-color: #4a4a4e; }
+        select:focus, input:not(#model-search):focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3); outline: none; background-color: #4a4a4e; }
         button { background: linear-gradient(to right, var(--primary-color), var(--secondary-color)); color: white; padding: 12px 20px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; font-size: 1em; text-transform: uppercase; letter-spacing: 0.8px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: all 0.3s ease; margin-top: 10px; width: 100%; }
         button:hover:not(:disabled), button:focus:not(:disabled) { background: linear-gradient(to right, var(--secondary-color), var(--primary-color)); box-shadow: 0 4px 10px rgba(0,0,0,0.3); transform: translateY(-2px); }
         button:disabled { background: #555; cursor: not-allowed; opacity: 0.7; }
@@ -32,7 +44,12 @@
         .slurm-options h3 { margin-top: 25px; font-size: 1.2em;}
         .slurm-options label { font-weight: 400; font-size: 0.85em; margin-top: 8px; }
         .endpoints-container #refresh-endpoints-button { background: linear-gradient(to right, #ffcc00, #ff9500); margin-bottom: 15px; }
-        .endpoints-container #refresh-endpoints-button:hover { background: linear-gradient(to right, #ff9500, #ffcc00); }
+        .endpoints-container #refresh-endpoints-button:hover:not(:disabled) { background: linear-gradient(to right, #ff9500, #ffcc00); }
+        .endpoints-container ul { list-style-type: none; padding: 0;}
+        .endpoint-item { background-color: #3a3a3cdd; border: 1px solid #4a4a4e; padding: 12px; margin-bottom: 10px; border-radius: 6px; font-size: 0.85em; line-height: 1.5; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); }
+        .endpoint-item strong { color: var(--secondary-color); }
+        .endpoint-item a { color: var(--accent-color); text-decoration: none; font-weight: bold; word-break: break-all;}
+        .endpoint-item a:hover { text-decoration: underline; color: #ffd633; }
         .footer { text-align: center; padding: 20px; background-color: #0e0e0f; color: #8e8e93; font-size: 0.9em; margin-top: auto; border-top: 3px solid var(--accent-color); }
         .icon { margin-right: 8px; font-size: 1.2em; vertical-align: middle;}
     </style>
@@ -42,7 +59,13 @@
     <div class="main-container">
         <div class="form-container">
             <h3><span class="icon">⚙️</span> Deploy New vLLM Instance via Backend</h3>
-            <label for="model-select">Select Model:</label><select id="model-select"><option value="">-- Select a Model --</option></select>
+            
+            <label for="model-search">Search Models:</label>
+            <input type="text" id="model-search" placeholder="Type to filter models..." autocomplete="off">
+
+            <label for="model-select">Select Model:</label>
+            <select id="model-select"><option value="">-- Loading models... --</option></select>
+            
             <label for="service-port">Service Port (on Slurm node):</label><input type="number" id="service-port" value="8000" min="1024" max="65535"/>
             <label for="hf-token">Hugging Face Token (Optional):</label><input type="password" id="hf-token" placeholder="Needed for Llama, gated models, etc."/>
             <div class="slurm-options">
@@ -58,12 +81,12 @@
             <div id="output">Configure and click deploy. Status will appear here.</div>
         </div>
         <div class="endpoints-container">
-            <h3><span class="icon">📡</span> Active Deployments (Placeholder)</h3>
+            <h3><span class="icon">📡</span> Active Deployments</h3>
             <button id="refresh-endpoints-button">Refresh Status</button>
-            <div id="deployed-endpoints-list"><p>Functionality to list active Slurm jobs requires further backend development.</p></div>
+            <div id="deployed-endpoints-list"><p><em>Loading active deployments...</em></p></div>
         </div>
     </div>
-    <div class="footer">✧ SERAPHIM CORE Interface v1.3 (Foreground Slurm Service) ✧ System Online ✧</div>
+    <div class="footer">✧ SERAPHIM CORE Interface v1.5 (Searchable Models) ✧ System Online ✧</div>
     <script src="seraphim_logic.js" defer></script>
 </body>
 </html>

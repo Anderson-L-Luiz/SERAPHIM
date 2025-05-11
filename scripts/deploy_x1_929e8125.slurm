@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=vllm_service
-#SBATCH --output=/home/aimotion_api/SERAPHIM/scripts/vllm_service_%j.out
-#SBATCH --error=/home/aimotion_api/SERAPHIM/scripts/vllm_service_%j.err
+#SBATCH --job-name=x1
+#SBATCH --output=/home/aimotion_api/SERAPHIM/scripts/x1_%j.out
+#SBATCH --error=/home/aimotion_api/SERAPHIM/scripts/x1_%j.err
 #SBATCH --time=23:59:59
 #SBATCH --gres=gpu:1
 #SBATCH --ntasks=1
@@ -21,10 +21,10 @@ echo "=================================================================="
 echo "✝ SERAPHIM vLLM Deployment Job - SLURM PREP ✝"
 echo "Job Start Time: $(date)"
 echo "Job ID: $SLURM_JOB_ID running on Node: $(hostname -f) (Short: $(hostname -s))"
-echo "Slurm Output File: /home/aimotion_api/SERAPHIM/scripts/vllm_service_$SLURM_JOB_ID.out"
-echo "Slurm Error File: /home/aimotion_api/SERAPHIM/scripts/vllm_service_$SLURM_JOB_ID.err"
-echo "Model: mistralai/Mistral-7B-Instruct-v0.1"
-echo "Target Service Port: 8000"
+echo "Slurm Output File: /home/aimotion_api/SERAPHIM/scripts/x1_$SLURM_JOB_ID.out"
+echo "Slurm Error File: /home/aimotion_api/SERAPHIM/scripts/x1_$SLURM_JOB_ID.err"
+echo "Model: tiiuae/falcon-7b-instruct"
+echo "Target Service Port: 12321"
 echo "Conda Env: seraphim_vllm_env"
 echo "Max Model Length: 16384"
 echo "vLLM service will run in the FOREGROUND of this Slurm job."
@@ -48,18 +48,18 @@ export VLLM_CONFIGURE_LOGGING="0"; export VLLM_NO_USAGE_STATS="True"; export VLL
 # export VLLM_ALLOW_LONG_MAX_MODEL_LEN="1" # Enable if absolutely necessary and VRAM allows
 
 echo -e "\nStarting vLLM API Server in the FOREGROUND..."
-echo "Command: vllm serve "mistralai/Mistral-7B-Instruct-v0.1" \
+echo "Command: vllm serve "tiiuae/falcon-7b-instruct" \
     --host "0.0.0.0" \
-    --port 8000 \
+    --port 12321 \
     --trust-remote-code \
     --max-model-len 16384"
 echo "vLLM service output/errors will be in Slurm output/error files specified above."
 echo "--- vLLM Service Starting (Output will follow) ---"
 
 # Execute vLLM Server in the FOREGROUND
-vllm serve "mistralai/Mistral-7B-Instruct-v0.1" \
+vllm serve "tiiuae/falcon-7b-instruct" \
     --host "0.0.0.0" \
-    --port 8000 \
+    --port 12321 \
     --trust-remote-code \
     --max-model-len 16384
 
@@ -71,7 +71,7 @@ if [ $VLLM_EXIT_CODE -eq 0 ]; then
     echo "vLLM service exited cleanly or was terminated."
 else
     echo "ERROR: vLLM service exited with error code: $VLLM_EXIT_CODE."
-    echo "Please check Slurm error file: /home/aimotion_api/SERAPHIM/scripts/vllm_service_$SLURM_JOB_ID.err"
+    echo "Please check Slurm error file: /home/aimotion_api/SERAPHIM/scripts/x1_$SLURM_JOB_ID.err"
 fi
 echo "Slurm job $SLURM_JOB_ID finished."
 echo "=================================================================="

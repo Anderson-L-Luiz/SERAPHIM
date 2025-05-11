@@ -11,11 +11,40 @@ FRONTEND_LOG_FILE="$SERAPHIM_DIR_START/seraphim_frontend.log"
 BACKEND_PID_FILE="$SERAPHIM_DIR_START/seraphim_backend.pid"
 FRONTEND_PID_FILE="$SERAPHIM_DIR_START/seraphim_frontend.pid"
 
+# Function to check if a port is in use
+is_port_in_use() {
+    local port=$1
+    if command -v ss > /dev/null; then
+        ss -tulnp | grep -q ":${port}\s"
+    elif command -v netstat > /dev/null; then
+        netstat -tulnp | grep -q ":${port}\s"
+    else
+        echo "Warning: Neither 'ss' nor 'netstat' found. Cannot check if port $port is in use."
+        return 0 # Assume not in use if we can't check
+    fi
+}
+
 echo "Starting SERAPHIM Application..."
+echo "================================="
+
 if [ -f "$BACKEND_PID_FILE" ] && ps -p $(cat "$BACKEND_PID_FILE") > /dev/null; then
-    echo "❌ Backend already running (PID: $(cat "$BACKEND_PID_FILE")). Use ./stop_seraphim.sh first."
+    echo "❌ Backend already running (PID: $(cat "$BACKEND_PID_FILE")). Use ./stop_seraphim.sh."
     exit 1
 fi
+if is_port_in_use "$BACKEND_PORT_START"; then
+    echo "❌ Error: Backend port $BACKEND_PORT_START is already in use. Please free it or change BACKEND_PORT in install.sh and re-run."
+    exit 1
+fi
+
+if [ -f "$FRONTEND_PID_FILE" ] && ps -p $(cat "$FRONTEND_PID_FILE") > /dev/null; then
+    echo "❌ Frontend server already running (PID: $(cat "$FRONTEND_PID_FILE")). Use ./stop_seraphim.sh."
+    exit 1
+fi
+if is_port_in_use "$FRONTEND_PORT_START"; then
+    echo "❌ Error: Frontend port $FRONTEND_PORT_START is already in use. Please free it or change FRONTEND_PORT in install.sh and re-run."
+    exit 1
+fi
+
 cd "$SERAPHIM_DIR_START" || { echo "Error: Could not navigate to $SERAPHIM_DIR_START"; exit 1; }
 echo "Activating Conda: $CONDA_ENV_NAME_START..."
 _CONDA_SH_PATH="$CONDA_BASE_PATH_START/etc/profile.d/conda.sh"
