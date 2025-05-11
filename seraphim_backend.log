@@ -32,3 +32,61 @@ INFO:     172.18.3.7:55816 - "GET /api/active_deployments HTTP/1.1" 200 OK
 INFO:     172.18.3.7:55818 - "POST /api/deploy HTTP/1.1" 200 OK
 INFO:     172.18.3.7:55818 - "GET /api/active_deployments HTTP/1.1" 200 OK
 INFO:     172.18.3.7:65219 - "GET /api/active_deployments HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1109110]
+[2025-05-11 11:05:03,642] [INFO] Starting SERAPHIM Backend Server on http://0.0.0.0:8870
+INFO:     Started server process [1798278]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8870 (Press CTRL+C to quit)
+INFO:     172.18.3.7:59214 - "GET /api/active_deployments HTTP/1.1" 200 OK
+INFO:     172.18.3.7:59225 - "OPTIONS /api/deploy HTTP/1.1" 200 OK
+[2025-05-11 11:06:14,305] [INFO] Deployment request for model: deepseek-ai/deepseek-r1-7b-chat, Service Port: 8000, Max Model Len: None, Job Name: vllm_service_model_port
+[2025-05-11 11:06:14,306] [INFO] Using general default max_model_len: 16384 for deepseek-ai/deepseek-r1-7b-chat (no user input or specific rule)
+[2025-05-11 11:06:14,306] [INFO] Slurm script saved: /home/aimotion_api/SERAPHIM/scripts/deploy_vllm_service_model_port_e3538b2f.slurm
+[2025-05-11 11:06:14,318] [INFO] Sbatch successful. Output: 'Submitted batch job 592', Parsed Job ID: 592
+INFO:     172.18.3.7:59225 - "POST /api/deploy HTTP/1.1" 200 OK
+INFO:     172.18.3.7:59225 - "GET /api/active_deployments HTTP/1.1" 200 OK
+[2025-05-11 11:08:00,492] [INFO] Deployment request for model: deepseek-ai/deepseek-moe-16b-chat, Service Port: 8000, Max Model Len: None, Job Name: vllm_service_model_port
+[2025-05-11 11:08:00,492] [INFO] Using general default max_model_len: 16384 for deepseek-ai/deepseek-moe-16b-chat (no user input or specific rule)
+[2025-05-11 11:08:00,493] [INFO] Slurm script saved: /home/aimotion_api/SERAPHIM/scripts/deploy_vllm_service_model_port_eb45fbf4.slurm
+[2025-05-11 11:08:00,503] [INFO] Sbatch successful. Output: 'Submitted batch job 593', Parsed Job ID: 593
+INFO:     172.18.3.7:59250 - "POST /api/deploy HTTP/1.1" 200 OK
+INFO:     172.18.3.7:59250 - "GET /api/active_deployments HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1798278]
+[2025-05-11 11:17:08,435] [INFO] Starting SERAPHIM Backend Server on http://0.0.0.0:8870
+INFO:     Started server process [1807966]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8870 (Press CTRL+C to quit)
+INFO:     172.18.3.7:54280 - "GET /api/active_deployments HTTP/1.1" 200 OK
+INFO:     172.18.3.7:54290 - "OPTIONS /api/deploy HTTP/1.1" 200 OK
+[2025-05-11 11:17:44,022] [INFO] Deployment request for model: deepseek-ai/deepseek-moe-16b-chat, Service Port: 8000, Max Model Len: None, Job Name: vllm_service_model_port
+[2025-05-11 11:17:44,022] [INFO] Using general default max_model_len: 16384 for deepseek-ai/deepseek-moe-16b-chat (no user input or specific rule)
+[2025-05-11 11:17:44,022] [INFO] Slurm script saved: /home/aimotion_api/SERAPHIM/scripts/deploy_vllm_service_model_port_ea3bf6f6.slurm
+[2025-05-11 11:17:44,032] [INFO] Sbatch successful. Output: 'Submitted batch job 594', Parsed Job ID: 594
+INFO:     172.18.3.7:54290 - "POST /api/deploy HTTP/1.1" 200 OK
+INFO:     172.18.3.7:54290 - "GET /api/active_deployments HTTP/1.1" 200 OK
+INFO:     172.18.3.5:60841 - "OPTIONS /api/deploy HTTP/1.1" 200 OK
+[2025-05-11 13:39:44,643] [INFO] Deployment request for model: Qwen/Qwen-1_8B, Service Port: 8000, Max Model Len: None, Job Name: Qwen
+[2025-05-11 13:39:44,643] [INFO] Using general default max_model_len: 16384 for Qwen/Qwen-1_8B (no user input or specific rule)
+[2025-05-11 13:39:44,644] [INFO] Slurm script saved: /home/aimotion_api/SERAPHIM/scripts/deploy_Qwen_09e7b9d3.slurm
+[2025-05-11 13:39:44,655] [INFO] Sbatch successful. Output: 'Submitted batch job 595', Parsed Job ID: 595
+INFO:     172.18.3.5:60841 - "POST /api/deploy HTTP/1.1" 200 OK
+[2025-05-11 13:39:44,765] [INFO] Could not extract port from job name vllm_service_model_port, defaulting to check for 8000
+INFO:     172.18.3.5:60841 - "GET /api/active_deployments HTTP/1.1" 200 OK
+[2025-05-11 13:40:52,417] [INFO] Could not extract port from job name vllm_service_model_port, defaulting to check for 8000
+INFO:     172.18.3.5:60861 - "GET /api/active_deployments HTTP/1.1" 200 OK
+[2025-05-11 13:44:22,506] [INFO] Deployment request for model: deepseek-ai/deepseek-moe-16b-chat, Service Port: 8001, Max Model Len: None, Job Name: Deepseek
+[2025-05-11 13:44:22,507] [INFO] Using general default max_model_len: 16384 for deepseek-ai/deepseek-moe-16b-chat (no user input or specific rule)
+[2025-05-11 13:44:22,507] [INFO] Slurm script saved: /home/aimotion_api/SERAPHIM/scripts/deploy_Deepseek_5478c2e0.slurm
+[2025-05-11 13:44:22,518] [INFO] Sbatch successful. Output: 'Submitted batch job 596', Parsed Job ID: 596
+INFO:     172.18.3.5:60903 - "POST /api/deploy HTTP/1.1" 200 OK
+INFO:     172.18.3.5:60903 - "GET /api/active_deployments HTTP/1.1" 200 OK
+INFO:     172.18.3.5:63545 - "GET /api/active_deployments HTTP/1.1" 200 OK
+INFO:     172.18.3.5:63545 - "GET /api/active_deployments HTTP/1.1" 200 OK

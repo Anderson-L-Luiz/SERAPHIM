@@ -3,20 +3,21 @@ Current ulimit -n (hard): 51200
 Successfully set ulimit -n to 10240
 ==================================================================
 ✝ SERAPHIM vLLM Deployment Job - SLURM PREP ✝
-Job Start Time: Sat May 10 06:47:57 PM UTC 2025
-Job ID: 588 running on Node: ki-g0002.rz.fh-ingolstadt.de (Short: ki-g0002)
-Slurm Output File: /home/aimotion_api/SERAPHIM/scripts/vllm_service_588.out
-Slurm Error File: /home/aimotion_api/SERAPHIM/scripts/vllm_service_588.err
-Model: Qwen/Qwen2-1.5B-Instruct
+Job Start Time: Sun May 11 11:17:45 AM UTC 2025
+Job ID: 594 running on Node: ki-g0002.rz.fh-ingolstadt.de (Short: ki-g0002)
+Slurm Output File: /home/aimotion_api/SERAPHIM/scripts/vllm_service_model_port_594.out
+Slurm Error File: /home/aimotion_api/SERAPHIM/scripts/vllm_service_model_port_594.err
+Model: deepseek-ai/deepseek-moe-16b-chat
 Target Service Port: 8000
 Conda Env: seraphim_vllm_env
-Max Model Length: 16384
+Max Model Length Requested: 16384
 vLLM service will run in the FOREGROUND of this Slurm job.
 ==================================================================
 Conda env 'seraphim_vllm_env' activated. Path: /home/aimotion_api/anaconda3/envs/seraphim_vllm_env
 HF_TOKEN not provided.
+VLLM_ALLOW_LONG_MAX_MODEL_LEN set to 1.
 
 Starting vLLM API Server in FOREGROUND...
-Command: vllm serve Qwen/Qwen2-1.5B-Instruct     --host 0.0.0.0     --port 8000     --trust-remote-code     --max-model-len 16384
+Command: vllm serve deepseek-ai/deepseek-moe-16b-chat     --host 0.0.0.0     --port 8000     --trust-remote-code     --max-model-len 16384
 vLLM logs will be in Slurm output/error files.
 --- vLLM Service Starting (Output will follow) ---

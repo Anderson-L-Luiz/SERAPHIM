@@ -23,17 +23,17 @@
         .endpoints-container { flex: 1; min-width: 380px; max-height: 80vh; overflow-y: auto; }
         h3 { font-family: var(--font-heading); color: var(--secondary-color); border-bottom: 1px solid var(--accent-color); padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; font-size: 1.4em; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
         label { display: block; margin-top: 15px; margin-bottom: 5px; font-weight: 600; font-size: 0.9em; color: var(--text-muted-color); text-transform: uppercase; letter-spacing: 0.5px;}
-        #model-search { /* Style for the search input */
-            width: calc(100% - 24px); /* Match other inputs */
-            padding: 11px; margin-bottom: 8px; /* Spacing */
+        #model-search { 
+            width: 100%; 
+            padding: 11px; margin-bottom: 8px; 
             border-radius: 5px; border: 1px solid var(--border-color);
             box-sizing: border-box; font-size: 0.95em;
             background-color: #3a3a3c; color: var(--text-color);
         }
         #model-search:focus {
-             border-color: var(--primary-color);
-             box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
-             outline: none; background-color: #4a4a4e;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
+            outline: none; background-color: #4a4a4e;
         }
         select, input[type="text"], input[type="number"], input[type="email"], input[type="password"] { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 5px; border: 1px solid var(--border-color); box-sizing: border-box; font-size: 0.95em; background-color: #3a3a3c; color: var(--text-color); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
         select:focus, input:not(#model-search):focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3); outline: none; background-color: #4a4a4e; }
@@ -60,25 +60,29 @@
         <div class="form-container">
             <h3><span class="icon">⚙️</span> Deploy New vLLM Instance via Backend</h3>
             
-            <label for="model-search">Search Models:</label>
+            <label for="model-search">Search Models (from models.txt):</label>
             <input type="text" id="model-search" placeholder="Type to filter models..." autocomplete="off">
 
             <label for="model-select">Select Model:</label>
             <select id="model-select"><option value="">-- Loading models... --</option></select>
             
-            <label for="service-port">Service Port (on Slurm node):</label><input type="number" id="service-port" value="8000" min="1024" max="65535"/>
+            <label for="max-model-len">Max Model Length (Context Window - Optional):</label>
+            <input type="number" id="max-model-len" placeholder="e.g., 4096, 16384 (leave blank for default)" min="1"/>
+
+            <label for="service-port">Service Port (on Slurm node, e.g., 8000-8999):</label><input type="number" id="service-port" value="8000" min="1024" max="65535"/>
             <label for="hf-token">Hugging Face Token (Optional):</label><input type="password" id="hf-token" placeholder="Needed for Llama, gated models, etc."/>
+            
             <div class="slurm-options">
                 <h3>Slurm Configuration</h3>
-                <label for="job-name">Job Name:</label><input type="text" id="job-name" value="vllm_service"/>
+                <label for="job-name">Job Name (Prefix 'vllm_service' used by backend):</label><input type="text" id="job-name" value="vllm_service_model_port"/>
                 <label for="time-limit">Time Limit (HH:MM:SS):</label><input type="text" id="time-limit" value="23:59:59"/>
-                <label for="gpus">GPUs (e.g., 1 or a100:1):</label><input type="text" id="gpus" value="1"/>
+                <label for="gpus">GPUs (e.g., 1 or a100:1 or gpu_type:count):</label><input type="text" id="gpus" value="1"/>
                 <label for="cpus-per-task">CPUs per Task:</label><input type="number" id="cpus-per-task" value="4" min="1"/>
-                <label for="mem">Memory (e.g., 32G):</label><input type="text" id="mem" value="32G"/>
+                <label for="mem">Memory (e.g., 32G, 64G):</label><input type="text" id="mem" value="32G"/>
                 <label for="mail-user">Email Notify (Optional):</label><input type="email" id="mail-user" placeholder="your_email@example.com"/>
             </div>
             <button id="deploy-button">Deploy to Slurm via Backend</button>
-            <div id="output">Configure and click deploy. Status will appear here.</div>
+            <div id="output">Configure and click deploy. Status will appear here. Ensure 'models.txt' is in the SERAPHIM directory.</div>
         </div>
         <div class="endpoints-container">
             <h3><span class="icon">📡</span> Active Deployments</h3>
@@ -86,7 +90,7 @@
             <div id="deployed-endpoints-list"><p><em>Loading active deployments...</em></p></div>
         </div>
     </div>
-    <div class="footer">✧ SERAPHIM CORE Interface v1.5 (Searchable Models) ✧ System Online ✧</div>
+    <div class="footer">✧ SERAPHIM CORE Interface v1.8 (Env Var Fix) ✧ System Online ✧</div>
     <script src="seraphim_logic.js" defer></script>
 </body>
 </html>
