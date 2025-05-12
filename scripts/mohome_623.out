@@ -1,0 +1,25 @@
+Current ulimit -n (soft): 4096
+Current ulimit -n (hard): 51200
+Successfully set ulimit -n to 10240
+==================================================================
+✝ SERAPHIM vLLM Deployment Job - SLURM PREP ✝
+Job Start Time: Mon May 12 09:01:29 AM UTC 2025
+Job ID: 623 running on Node: ki-g0002.rz.fh-ingolstadt.de (Short: ki-g0002)
+Slurm Output File: /home/aimotion_api/SERAPHIM/scripts/mohome_623.out
+Slurm Error File: /home/aimotion_api/SERAPHIM/scripts/mohome_623.err
+Model: Qwen/Qwen-1_8B
+Target Service Port: 8000
+Conda Env: seraphim_vllm_env
+Max Model Length Requested: 16384
+vLLM service will run in the FOREGROUND of this Slurm job.
+==================================================================
+Conda env 'seraphim_vllm_env' activated. Path: /home/aimotion_api/anaconda3/envs/seraphim_vllm_env
+HF_TOKEN not provided.
+VLLM_ALLOW_LONG_MAX_MODEL_LEN set to 1.
+
+Starting vLLM API Server in FOREGROUND...
+Command: vllm serve Qwen/Qwen-1_8B     --host 0.0.0.0     --port 8000     --trust-remote-code     --max-model-len 16384
+vLLM logs will be in Slurm output/error files.
+--- vLLM Service Starting (Output will follow) ---
+INFO:     10.116.91.165:61673 - "GET /docs%20%28best%20guess%2C%20check%20log%20for%20actual%20URL%29 HTTP/1.1" 404 Not Found
+INFO:     10.116.91.165:61673 - "GET /favicon.ico HTTP/1.1" 404 Not Found

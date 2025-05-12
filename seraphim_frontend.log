@@ -44,3 +44,20 @@
 10.116.91.165 - - [12/May/2025 08:12:31] "GET /models.txt HTTP/1.1" 200 -
 10.116.91.165 - - [12/May/2025 08:12:32] code 404, message File not found
 10.116.91.165 - - [12/May/2025 08:12:32] "GET /favicon.ico HTTP/1.1" 404 -
+10.116.91.165 - - [12/May/2025 08:33:30] "GET /seraphim_deploy.html HTTP/1.1" 200 -
+10.116.91.165 - - [12/May/2025 08:33:30] "GET /seraphim_logic.js HTTP/1.1" 200 -
+10.116.91.165 - - [12/May/2025 08:33:31] "GET /models.txt HTTP/1.1" 200 -
+10.116.91.165 - - [12/May/2025 08:33:31] code 404, message File not found
+10.116.91.165 - - [12/May/2025 08:33:31] "GET /favicon.ico HTTP/1.1" 404 -
+10.116.88.65 - - [12/May/2025 08:57:32] "GET /seraphim_deploy.html HTTP/1.1" 200 -
+10.116.88.65 - - [12/May/2025 08:57:32] "GET /seraphim_logic.js HTTP/1.1" 200 -
+10.116.91.165 - - [12/May/2025 09:03:11] "GET /seraphim_deploy.html HTTP/1.1" 304 -
+10.116.91.165 - - [12/May/2025 09:03:11] "GET /seraphim_logic.js HTTP/1.1" 304 -
+10.116.91.165 - - [12/May/2025 09:38:15] "GET /seraphim_deploy.html HTTP/1.1" 200 -
+10.116.91.165 - - [12/May/2025 09:38:15] "GET /seraphim_logic.js HTTP/1.1" 200 -
+10.116.91.165 - - [12/May/2025 09:38:15] code 404, message File not found
+10.116.91.165 - - [12/May/2025 09:38:15] "GET /favicon.ico HTTP/1.1" 404 -
+10.116.91.165 - - [12/May/2025 09:39:31] "GET /seraphim_deploy.html HTTP/1.1" 200 -
+10.116.91.165 - - [12/May/2025 09:39:31] "GET /seraphim_logic.js HTTP/1.1" 200 -
+10.116.91.165 - - [12/May/2025 09:39:31] code 404, message File not found
+10.116.91.165 - - [12/May/2025 09:39:31] "GET /favicon.ico HTTP/1.1" 404 -

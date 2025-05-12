@@ -54,3 +54,5 @@ User-specified max_model_len (16384) is greater than the derived max_model_len (
 INFO:     Started server process [2688913]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+slurmstepd-ki-g0002: error: *** JOB 618 ON ki-g0002 CANCELLED AT 2025-05-12T08:20:00 ***
+[2025-05-12 08:20:00] INFO launcher.py:79: Shutting down FastAPI HTTP server.

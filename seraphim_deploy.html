@@ -7,175 +7,204 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #029702; --secondary-color: #f3cb00; --accent-color: #ffcc00;
-            --bg-color: #1c1c1e; --card-bg-color: #2c2c2e; --text-color: #e5e5e7;
-            --text-muted-color: #8e8e93; --border-color: #3a3a3c;
-            --font-body: 'Exo 2', sans-serif; --font-heading: 'Orbitron', sans-serif;
-            --success-color: #02c702; --warning-color: #f3cb00; --error-color: #ff3b30;
-            --cancel-button-bg: #d9534f; --cancel-button-hover-bg: #c9302c;
-            --log-text-color: var(--success-color); /* Green for log text */
+            --matrix-green: #00FF00; 
+            --matrix-green-darker: #00AA00;
+            --matrix-green-darkest: #005500;
+            --matrix-bg: #000000;
+            --matrix-card-bg: #0D0D0D; 
+
+            --primary-color: var(--matrix-green); 
+            --secondary-color: var(--matrix-green-darker); 
+            --accent-color: var(--matrix-green); 
+            --bg-color: var(--matrix-bg); 
+            --card-bg-color: var(--matrix-card-bg); 
+            --text-color: var(--matrix-green); 
+            --text-muted-color: var(--matrix-green-darker); 
+            --border-color: var(--matrix-green-darkest);
+            
+            --font-body: 'Exo 2', 'Courier New', Courier, monospace; 
+            --font-heading: 'Orbitron', 'Courier New', Courier, monospace;
+            
+            --success-color: var(--matrix-green); 
+            --warning-color: #FFFF00; 
+            --error-color: #FF0000;  
+            --cancel-button-bg: #AA0000; 
+            --cancel-button-hover-bg: #FF0000;
+            --log-text-color: var(--matrix-green);
         }
         html, body { height: 100%; margin: 0; padding: 0; overflow-x: hidden; }
-        body { font-family: var(--font-body); background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; font-size: 16px; line-height: 1.6; }
-        .header { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); color: white; padding: 15px 30px; text-align: center; border-bottom: 3px solid var(--accent-color); text-shadow: 0 1px 3px rgba(0,0,0,0.3); flex-shrink: 0; }
-        .header h1 { margin: 0; font-family: var(--font-heading); font-size: 2.1em; font-weight: 700; letter-spacing: 1.5px; display: flex; align-items: center; justify-content: center; gap: 12px; }
-        .header p { margin: 5px 0 0; font-size: 0.9em; opacity: 0.9; font-weight: 300;}
+        body { 
+            font-family: var(--font-body); background-color: var(--bg-color); 
+            color: var(--text-color); display: flex; flex-direction: column; 
+            font-size: 15px; /* Base font size slightly smaller for dense UI */
+            line-height: 1.4; 
+        }
+        .header { 
+            background: linear-gradient(135deg, var(--matrix-green-darkest) 0%, var(--matrix-bg) 70%, var(--matrix-green-darkest) 100%); 
+            color: var(--matrix-green); padding: 10px 20px; text-align: center; 
+            border-bottom: 2px solid var(--matrix-green); 
+            text-shadow: 0 0 5px var(--matrix-green); flex-shrink: 0; 
+        }
+        .header h1 { margin: 0; font-family: var(--font-heading); font-size: 2em; font-weight: 700; letter-spacing: 2px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .header p { margin: 3px 0 0; font-size: 0.85em; opacity: 0.8; font-weight: 300;}
         
         .page-content-wrapper {
-            display: flex;
-            flex-grow: 1; 
-            padding: 15px;
-            gap: 15px;    
-            overflow: hidden; 
-            max-width: 100%; 
-            box-sizing: border-box;
-            align-items: stretch; 
+            display: flex; flex-grow: 1; 
+            padding: 10px; gap: 10px;    
+            overflow: hidden; max-width: 100%; 
+            box-sizing: border-box; align-items: stretch; 
         }
 
         .column { 
-            display: flex;
-            flex-direction: column; 
+            display: flex; flex-direction: column; 
             background-color: var(--card-bg-color);
-            padding: 15px; 
-            border-radius: 10px;
+            padding: 12px; 
+            border-radius: 8px;
             border: 1px solid var(--border-color);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 8px var(--matrix-green-darkest); 
             overflow: hidden; 
         }
         
-        .log-column { flex: 1 1 22%; min-width: 280px; } 
-        .deploy-column { flex: 1.5 1 28%; min-width: 380px; } 
-        .endpoints-column { flex: 1.3 1 28%; min-width: 320px; }
+        .log-column { flex: 1 1 23%; min-width: 250px; } 
+        .deploy-column { flex: 1.5 1 27%; min-width: 350px; } 
+        .endpoints-column { flex: 1.2 1 27%; min-width: 300px; }
 
 
         .column h3 {
-            font-family: var(--font-heading); color: var(--secondary-color); 
-            border-bottom: 1px solid var(--accent-color); padding-bottom: 8px; 
-            margin-top: 0; margin-bottom: 15px; font-size: 1.2em; 
-            letter-spacing: 1px; 
-            display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+            font-family: var(--font-heading); color: var(--matrix-green); 
+            border-bottom: 1px solid var(--matrix-green-darkest); padding-bottom: 6px; 
+            margin-top: 0; margin-bottom: 10px; font-size: 1.1em; 
+            letter-spacing: 1px; text-shadow: 0 0 3px var(--matrix-green-darker);
+            display: flex; align-items: center; gap: 8px; flex-shrink: 0;
         }
         
         .form-container, .endpoints-container-inner {
              display: flex; flex-direction: column;
-             overflow: hidden; 
-             flex-grow: 1; 
+             overflow: hidden; flex-grow: 1; 
         }
         
         .log-column pre { 
-            background-color: #1a1a1c; 
+            background-color: #000000; 
             color: var(--log-text-color); 
             padding: 10px; 
-            border-radius: 5px; font-family: 'Courier New', Courier, monospace;
-            font-size: 0.8em; 
+            border-radius: 4px; font-family: 'Monaco', 'Consolas', 'Courier New', Courier, monospace;
+            font-size: 1.0em; /* Increased log font size */
             white-space: pre-wrap; word-wrap: break-word;
-            border: 1px solid #333;
-            flex-grow: 1; 
-            overflow-y: auto; 
-            min-height: 150px; /* Ensure it has some base height */
+            border: 1px solid var(--matrix-green-darkest);
+            flex-grow: 1; overflow-y: auto; min-height: 150px; 
+            scrollbar-width: thin; scrollbar-color: var(--matrix-green-darker) #000;
         }
-        
-        /* Searchable Select Container */
+        .log-column pre::-webkit-scrollbar { width: 8px; }
+        .log-column pre::-webkit-scrollbar-track { background: #000; }
+        .log-column pre::-webkit-scrollbar-thumb { background-color: var(--matrix-green-darker); border-radius: 4px; border: 1px solid #000; }
+
         .searchable-select-container {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 10px; /* Spacing after the whole unit */
+            display: flex; flex-direction: column; margin-bottom: 8px;
         }
         #model-search {
-            width: 100%; padding: 8px; 
-            box-sizing: border-box; font-size: 0.9em; 
-            background-color: #3a3a3c; color: var(--text-color); 
-            border: 1px solid var(--border-color);
-            border-bottom: none; /* Connect to select below */
-            border-radius: 5px 5px 0 0; /* Top corners rounded */
-            margin-bottom: 0; /* Remove default margin */
+            width: 100%; padding: 7px; box-sizing: border-box; 
+            font-size: 0.85em; background-color: #000000; 
+            color: var(--matrix-green); border: 1px solid var(--matrix-green-darker);
+            border-bottom: none; border-radius: 4px 4px 0 0; margin-bottom: 0;
         }
         #model-search:focus {
-             border-color: var(--primary-color); 
-             box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.25); 
-             outline: none; background-color: #4a4a4e; 
-             z-index: 10; /* Ensure focus ring is visible */
+             border-color: var(--matrix-green); 
+             box-shadow: 0 0 3px var(--matrix-green); 
+             outline: none; background-color: #111111; z-index: 10;
         }
         #model-select {
-            border-radius: 0 0 5px 5px; /* Bottom corners rounded */
-            margin-top: 0; /* Remove default margin */
-            /* Ensure select takes focus styling when search is focused if desired (hard with pure CSS) */
+            width: 100%; padding: 7px; box-sizing: border-box; font-size: 0.85em;
+            background-color: #000000; color: var(--matrix-green);
+            border: 1px solid var(--matrix-green-darker);
+            border-radius: 0 0 4px 4px; margin-top: -1px; 
         }
-        /* End Searchable Select Container */
+        #model-select:focus {
+            border-color: var(--matrix-green);
+            box-shadow: 0 0 3px var(--matrix-green); outline: none;
+        }
+        #model-select option { background-color: #000000; color: var(--matrix-green); }
 
 
-        label { display: block; margin-top: 10px; margin-bottom: 3px; font-weight: 600; font-size: 0.8em; color: var(--text-muted-color); text-transform: uppercase; letter-spacing: 0.5px;}
-        /* General input/select styling (excluding model-search which is handled above) */
-        select:not(#model-select), input[type="text"]:not(#model-search), input[type="number"], input[type="email"], input[type="password"] { 
-            width: 100%; padding: 8px; margin-bottom: 10px; 
-            border-radius: 5px; border: 1px solid var(--border-color); 
-            box-sizing: border-box; font-size: 0.9em; 
-            background-color: #3a3a3c; color: var(--text-color); 
+        label { display: block; margin-top: 8px; margin-bottom: 2px; font-weight: 400; font-size: 0.75em; color: var(--text-muted-color); text-transform: uppercase; letter-spacing: 0.5px;}
+        select:not(#model-select), input[type="text"]:not(#model-search), input[type="number"], input[type="password"] { 
+            width: 100%; padding: 7px; margin-bottom: 8px; 
+            border-radius: 4px; border: 1px solid var(--matrix-green-darker); 
+            box-sizing: border-box; font-size: 0.85em; 
+            background-color: #000000; color: var(--matrix-green); 
         }
-        select:not(#model-select):focus, input[type="text"]:not(#model-search):focus, input[type="number"]:focus, input[type="email"]:focus, input[type="password"]:focus { 
-            border-color: var(--primary-color); 
-            box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.25); 
-            outline: none; background-color: #4a4a4e; 
+        select:not(#model-select):focus, input[type="text"]:not(#model-search):focus, input[type="number"]:focus, input[type="password"]:focus { 
+            border-color: var(--matrix-green); 
+            box-shadow: 0 0 5px var(--matrix-green); 
+            outline: none; background-color: #111111; 
         }
 
         button { 
-            background: linear-gradient(to right, var(--primary-color), var(--secondary-color)); 
-            color: white; padding: 10px 15px; cursor: pointer; border: none; 
-            border-radius: 5px; font-weight: bold; font-size: 0.9em; 
-            text-transform: uppercase; letter-spacing: 0.8px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
-            transition: all 0.3s ease; margin-top: 8px; width: 100%; 
+            background: var(--matrix-green-darkest); 
+            color: var(--matrix-green); padding: 8px 12px; cursor: pointer; border: 1px solid var(--matrix-green-darker); 
+            border-radius: 4px; font-weight: bold; font-size: 0.85em; 
+            text-transform: uppercase; letter-spacing: 1px; 
+            box-shadow: 0 0 5px var(--matrix-green-darkest); 
+            transition: all 0.2s ease; margin-top: 6px; width: 100%; 
+            text-shadow: 0 0 3px var(--matrix-green);
         }
         button:hover:not(:disabled), button:focus:not(:disabled) { 
-            background: linear-gradient(to right, var(--secondary-color), var(--primary-color)); 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); transform: translateY(-1px); 
+            background: var(--matrix-green-darker); 
+            color: #000000;
+            box-shadow: 0 0 10px var(--matrix-green); transform: translateY(-1px); 
+            text-shadow: none;
         }
-        button:disabled { background: #555; cursor: not-allowed; opacity: 0.7; }
+        button:disabled { background: #222; color: #555; cursor: not-allowed; opacity: 0.7; border-color: #333;}
         
         #output { 
-            margin-top: 10px; padding: 10px; background-color: #1c1c1e; 
-            border: 1px solid var(--border-color); border-radius: 6px; 
-            white-space: pre-wrap; word-wrap: break-word; font-size: 0.8em; 
-            max-height: 100px; overflow-y: auto; line-height: 1.4; 
-            font-family: 'Courier New', Courier, monospace; color: var(--text-color);
+            margin-top: 8px; padding: 8px; background-color: #000000; 
+            border: 1px solid var(--border-color); border-radius: 4px; 
+            white-space: pre-wrap; word-wrap: break-word; font-size: 0.75em; 
+            max-height: 80px; overflow-y: auto; line-height: 1.3; 
+            font-family: 'Monaco', 'Consolas', 'Courier New', monospace; color: var(--text-color);
             flex-shrink: 0; 
         }
-        .slurm-options h3 { margin-top: 15px; font-size: 1em;}
-        .slurm-options label { font-size: 0.75em; margin-top: 5px; }
+        .slurm-options h3 { margin-top: 12px; font-size: 0.9em; color: var(--matrix-green-darker); }
+        .slurm-options label { font-size: 0.7em; margin-top: 4px; }
         
-        #refresh-endpoints-button { background: linear-gradient(to right, #ffcc00, #ff9500); margin-bottom: 10px; flex-shrink:0; }
-        #refresh-endpoints-button:hover:not(:disabled) { background: linear-gradient(to right, #ff9500, #ffcc00); }
+        #refresh-endpoints-button { background: var(--matrix-green-darkest); margin-bottom: 8px; flex-shrink:0; }
+        #refresh-endpoints-button:hover:not(:disabled) { background: var(--matrix-green-darker); color: #000; }
         
-        #deployed-endpoints-list { overflow-y: auto; flex-grow: 1; padding-right: 5px; /* space for scrollbar */ }
+        #deployed-endpoints-list { overflow-y: auto; flex-grow: 1; padding-right: 3px; }
         #deployed-endpoints-list ul { list-style-type: none; padding: 0; margin:0;}
         .endpoint-item { 
-            background-color: #3a3a3cdd; border: 1px solid #4a4a4e; 
-            padding: 8px; margin-bottom: 6px; border-radius: 6px; 
+            background-color: #000; border: 1px solid var(--matrix-green-darkest); 
+            padding: 7px; margin-bottom: 5px; border-radius: 4px; 
             font-size: 0.75em; line-height: 1.3; 
             cursor: pointer; transition: background-color 0.2s ease; 
+            position: relative; /* For absolute positioning of cancel button if needed */
         }
-        .endpoint-item:hover { background-color: #4f4f52; }
-        .endpoint-item.selected { background-color: var(--primary-color); color: white; border-left: 4px solid var(--secondary-color); }
-        .endpoint-item.selected strong { color: var(--secondary-color); } 
-        .endpoint-item.selected a { color: white; }
-        .endpoint-item strong { color: var(--secondary-color); }
+        .endpoint-item:hover { background-color: var(--matrix-green-darkest); }
+        .endpoint-item.selected { background-color: var(--matrix-green-darker); color: #000; border-left: 3px solid var(--matrix-green); }
+        .endpoint-item.selected strong { color: var(--matrix-green); text-shadow: 0 0 2px #000;} 
+        .endpoint-item.selected a { color: #000; }
+        .endpoint-item strong { color: var(--matrix-green); }
         .endpoint-item a { color: var(--accent-color); text-decoration: none; font-weight: bold; word-break: break-all;}
-        .endpoint-item a:hover { text-decoration: underline; color: #ffd633; }
+        .endpoint-item a:hover { text-decoration: underline; color: var(--matrix-green); }
         .cancel-job-button {
-            background: var(--cancel-button-bg); color: white;
-            padding: 3px 6px; font-size: 0.9em; 
-            margin-top: 5px; width: auto; display: inline-block; float: right;
+            background: var(--cancel-button-bg); color: #fff;
+            padding: 2px 5px; font-size: 0.9em; 
+            margin-left: 8px; /* Space it from other text if it's inline */
+            border-radius: 3px;
+            border: 1px solid var(--error-color); text-shadow: none;
+            display: inline-block; /* Keeps it in flow */
+            vertical-align: middle; /* Align with text better */
+            /* float: none; Remove float */
         }
-        .cancel-job-button:hover:not(:disabled) { background: var(--cancel-button-hover-bg); }
+        .cancel-job-button:hover:not(:disabled) { background: var(--cancel-button-hover-bg); border-color: #FF5555; }
 
-        .footer { text-align: center; padding: 15px; background-color: #0e0e0f; color: #8e8e93; font-size: 0.85em; border-top: 3px solid var(--accent-color); flex-shrink: 0;}
-        .icon { margin-right: 8px; font-size: 1.1em; vertical-align: middle;}
+        .footer { text-align: center; padding: 10px; background-color: #000; color: var(--matrix-green-darker); font-size: 0.8em; border-top: 2px solid var(--matrix-green); flex-shrink: 0; text-shadow: 0 0 3px var(--matrix-green-darkest); }
+        .icon { margin-right: 6px; font-size: 1em; vertical-align: middle;}
     </style>
 </head>
 <body>
     <div class="header">
         <h1><span class="icon">⚡</span> SERAPHIM <span class="icon">⚡</span></h1>
-        <p>Scalable Engine for Reasoning, Analysis, Prediction, Hosting, and Intelligent Modeling</p>
+        <p>Systematic Engine for Resource Allocation & Parallel Hybrid Intelligent Modeling</p>
     </div>
     
     <div class="page-content-wrapper">
@@ -190,27 +219,26 @@
                 
                 <label for="model-search">Select Model (type to filter):</label>
                 <div class="searchable-select-container">
-                    <input type="text" id="model-search" placeholder="Type to filter models..." autocomplete="off">
-                    <select id="model-select"><option value="">-- Loading models... --</option></select>
+                    <input type="text" id="model-search" placeholder="Filter models..." autocomplete="off">
+                    <select id="model-select"><option value="">-- Loading... --</option></select>
                 </div>
                 
                 <label for="max-model-len">Max Model Length (Optional):</label>
                 <input type="number" id="max-model-len" placeholder="e.g., 4096 (blank for default)" min="1"/>
                 <label for="service-port">Service Port (on Slurm node):</label>
-                <input type="number" id="service-port" value="8000" min="1024" max="65535"/>
+                <input type="number" id="service-port" placeholder="e.g., 8000-8999" min="1024" max="65535"/>
                 <label for="hf-token">Hugging Face Token (Optional):</label>
                 <input type="password" id="hf-token" placeholder="For Llama, gated models, etc."/>
                 
                 <div class="slurm-options">
                     <h3>Slurm Configuration</h3>
-                    <label for="job-name">Job Name (Prefix 'vllm_service'...):</label>
-                    <input type="text" id="job-name" value="vllm_service_model_port"/>
-                    <label for="time-limit">Time Limit (HH:MM:SS):</label><input type="text" id="time-limit" value="23:59:59"/>
+                    <label for="job-name">Job Name (e.g., vllm_service_model_pPORT):</label>
+                    <input type="text" id="job-name" value="vllm_service_model_pXXXX"/>
+                    <label for="time-limit">Time Limit (HH:MM:SS):</label><input type="text" id="time-limit" value="01:00:00"/>
                     <label for="gpus">GPUs (e.g., 1 or a100:1):</label><input type="text" id="gpus" value="1"/>
                     <label for="cpus-per-task">CPUs per Task:</label><input type="number" id="cpus-per-task" value="4" min="1"/>
                     <label for="mem">Memory (e.g., 32G):</label><input type="text" id="mem" value="32G"/>
-                    <label for="mail-user">Email Notify (Optional):</label><input type="email" id="mail-user" placeholder="your_email@example.com"/>
-                </div>
+                    </div>
                 <button id="deploy-button">Deploy to Slurm</button>
                 <div id="output">Configure and click deploy. Status will appear here.</div>
             </div>
@@ -230,7 +258,7 @@
         </div>
     </div>
 
-    <div class="footer">✧ SERAPHIM CORE Interface v2.2 (ANDERSON DE LIMA LUIZ) ✧</div>
+    <div class="footer">✧ SERAPHIM CORE Interface v2.4 (Matrix Reloaded) ✧ TDC AI | ANDERSON LUIZ ✧</div>
     <script src="seraphim_logic.js" defer></script>
 </body>
 </html>
