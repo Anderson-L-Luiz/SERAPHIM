@@ -1,0 +1,30 @@
+Current ulimit -n (soft): 4096
+Current ulimit -n (hard): 51200
+Successfully set ulimit -n to 10240
+==================================================================
+✝ SERAPHIM vLLM Deployment Job - SLURM PREP ✝
+Job Start Time: Mon May 12 05:30:08 AM UTC 2025
+Job ID: 608 running on Node: ki-g0002.rz.fh-ingolstadt.de (Short: ki-g0002)
+Slurm Output File: /home/aimotion_api/SERAPHIM/scripts/vllm_service_model_port_608.out
+Slurm Error File: /home/aimotion_api/SERAPHIM/scripts/vllm_service_model_port_608.err
+Model: deepseek-ai/deepseek-moe-16b-chat
+Target Service Port: 8001
+Conda Env: seraphim_vllm_env
+Max Model Length Requested: 16384
+vLLM service will run in the FOREGROUND of this Slurm job.
+==================================================================
+Conda env 'seraphim_vllm_env' activated. Path: /home/aimotion_api/anaconda3/envs/seraphim_vllm_env
+HF_TOKEN not provided.
+VLLM_ALLOW_LONG_MAX_MODEL_LEN set to 1.
+
+Starting vLLM API Server in FOREGROUND...
+Command: vllm serve deepseek-ai/deepseek-moe-16b-chat     --host 0.0.0.0     --port 8001     --trust-remote-code     --max-model-len 16384
+vLLM logs will be in Slurm output/error files.
+--- vLLM Service Starting (Output will follow) ---
+INFO:     10.16.246.10:51666 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     10.16.246.10:38212 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     10.16.246.10:50956 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     10.16.246.10:37926 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     10.16.246.10:55432 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     10.16.246.10:40342 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     10.16.246.10:40208 - "POST /v1/chat/completions HTTP/1.1" 200 OK

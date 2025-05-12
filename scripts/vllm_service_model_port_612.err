@@ -1,0 +1,98 @@
+Found ulimit of 10240 and failed to automatically increase with error current limit exceeds maximum limit. This can cause fd limit errors like `OSError: [Errno 24] Too many open files`. Consider increasing with ulimit -n
+[2025-05-12 06:33:01] INFO core.py:58: Initializing a V1 LLM engine (v0.8.5.post1) with config: model='deepseek-ai/deepseek-coder-33b-instruct', speculative_config=None, tokenizer='deepseek-ai/deepseek-coder-33b-instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, override_neuron_config=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=16384, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto,  device_config=cuda, decoding_config=DecodingConfig(guided_decoding_backend='auto', reasoning_backend=None), observability_config=ObservabilityConfig(show_hidden_metrics=False, otlp_traces_endpoint=None, collect_model_forward_time=False, collect_model_execute_time=False), seed=None, served_model_name=deepseek-ai/deepseek-coder-33b-instruct, num_scheduler_steps=1, multi_step_stream_outputs=True, enable_prefix_caching=True, chunked_prefill_enabled=True, use_async_output_proc=True, disable_mm_preprocessor_cache=False, mm_processor_kwargs=None, pooler_config=None, compilation_config={"level":3,"custom_ops":["none"],"splitting_ops":["vllm.unified_attention","vllm.unified_attention_with_output"],"use_inductor":true,"compile_sizes":[],"use_cudagraph":true,"cudagraph_num_of_warmups":1,"cudagraph_capture_sizes":[512,504,496,488,480,472,464,456,448,440,432,424,416,408,400,392,384,376,368,360,352,344,336,328,320,312,304,296,288,280,272,264,256,248,240,232,224,216,208,200,192,184,176,168,160,152,144,136,128,120,112,104,96,88,80,72,64,56,48,40,32,24,16,8,4,2,1],"max_capture_size":512}
+[2025-05-12 06:33:01] WARNING utils.py:2522: Methods determine_num_available_blocks,device_config,get_cache_block_size_bytes,initialize_cache not implemented in <vllm.v1.worker.gpu_worker.Worker object at 0x7f8963c22e30>
+[2025-05-12 06:33:02] INFO parallel_state.py:1004: rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, TP rank 0
+[2025-05-12 06:33:02] INFO cuda.py:221: Using Flash Attention backend on V1 engine.
+[2025-05-12 06:33:02] WARNING topk_topp_sampler.py:69: FlashInfer is not available. Falling back to the PyTorch-native implementation of top-p & top-k sampling. For the best performance, please install FlashInfer.
+[2025-05-12 06:33:02] INFO gpu_model_runner.py:1329: Starting to load model deepseek-ai/deepseek-coder-33b-instruct...
+[2025-05-12 06:33:02] INFO weight_utils.py:265: Using model weights format ['*.safetensors']
+Loading safetensors checkpoint shards:   0% Completed | 0/7 [00:00<?, ?it/s]
+Loading safetensors checkpoint shards:  14% Completed | 1/7 [00:01<00:11,  2.00s/it]
+Loading safetensors checkpoint shards:  29% Completed | 2/7 [00:05<00:13,  2.66s/it]
+Loading safetensors checkpoint shards:  43% Completed | 3/7 [00:08<00:11,  2.82s/it]
+Loading safetensors checkpoint shards:  57% Completed | 4/7 [00:11<00:08,  2.87s/it]
+Loading safetensors checkpoint shards:  71% Completed | 5/7 [00:13<00:05,  2.75s/it]
+Loading safetensors checkpoint shards:  86% Completed | 6/7 [00:16<00:02,  2.71s/it]
+Loading safetensors checkpoint shards: 100% Completed | 7/7 [00:19<00:00,  2.83s/it]
+Loading safetensors checkpoint shards: 100% Completed | 7/7 [00:19<00:00,  2.76s/it]
+
+[2025-05-12 06:33:23] INFO loader.py:458: Loading weights took 20.50 seconds
+[2025-05-12 06:33:23] INFO gpu_model_runner.py:1347: Model loading took 62.1845 GiB and 21.517885 seconds
+[2025-05-12 06:33:34] INFO backends.py:420: Using cache directory: /home/aimotion_api/.cache/vllm/torch_compile_cache/008ceb3385/rank_0_0 for vLLM's torch.compile
+[2025-05-12 06:33:34] INFO backends.py:430: Dynamo bytecode transform time: 10.86 s
+[2025-05-12 06:33:44] INFO backends.py:118: Directly load the compiled graph(s) for shape None from the cache, took 9.054 s
+[2025-05-12 06:33:55] INFO monitor.py:33: torch.compile takes 10.86 s in total
+[2025-05-12 06:33:56] ERROR core.py:396: EngineCore failed to start.
+Traceback (most recent call last):
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/engine/core.py", line 387, in run_engine_core
+    engine_core = EngineCoreProc(*args, **kwargs)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/engine/core.py", line 329, in __init__
+    super().__init__(vllm_config, executor_class, log_stats,
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/engine/core.py", line 71, in __init__
+    self._initialize_kv_caches(vllm_config)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/engine/core.py", line 133, in _initialize_kv_caches
+    kv_cache_configs = [
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/engine/core.py", line 134, in <listcomp>
+    get_kv_cache_config(vllm_config, kv_cache_spec_one_worker,
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/core/kv_cache_utils.py", line 699, in get_kv_cache_config
+    check_enough_kv_cache_memory(vllm_config, kv_cache_spec, available_memory)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/core/kv_cache_utils.py", line 527, in check_enough_kv_cache_memory
+    raise ValueError("No available memory for the cache blocks. "
+ValueError: No available memory for the cache blocks. Try increasing `gpu_memory_utilization` when initializing the engine.
+Process EngineCore_0:
+Traceback (most recent call last):
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/engine/core.py", line 400, in run_engine_core
+    raise e
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/engine/core.py", line 387, in run_engine_core
+    engine_core = EngineCoreProc(*args, **kwargs)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/engine/core.py", line 329, in __init__
+    super().__init__(vllm_config, executor_class, log_stats,
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/engine/core.py", line 71, in __init__
+    self._initialize_kv_caches(vllm_config)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/engine/core.py", line 133, in _initialize_kv_caches
+    kv_cache_configs = [
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/engine/core.py", line 134, in <listcomp>
+    get_kv_cache_config(vllm_config, kv_cache_spec_one_worker,
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/core/kv_cache_utils.py", line 699, in get_kv_cache_config
+    check_enough_kv_cache_memory(vllm_config, kv_cache_spec, available_memory)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/core/kv_cache_utils.py", line 527, in check_enough_kv_cache_memory
+    raise ValueError("No available memory for the cache blocks. "
+ValueError: No available memory for the cache blocks. Try increasing `gpu_memory_utilization` when initializing the engine.
+[rank0]:[W512 06:33:57.934584221 ProcessGroupNCCL.cpp:1496] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+Traceback (most recent call last):
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/bin/vllm", line 8, in <module>
+    sys.exit(main())
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/entrypoints/cli/main.py", line 53, in main
+    args.dispatch_function(args)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/entrypoints/cli/serve.py", line 27, in cmd
+    uvloop.run(run_server(args))
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/uvloop/__init__.py", line 82, in run
+    return loop.run_until_complete(wrapper())
+  File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/uvloop/__init__.py", line 61, in wrapper
+    return await main
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/entrypoints/openai/api_server.py", line 1078, in run_server
+    async with build_async_engine_client(args) as engine_client:
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/entrypoints/openai/api_server.py", line 146, in build_async_engine_client
+    async with build_async_engine_client_from_engine_args(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/entrypoints/openai/api_server.py", line 178, in build_async_engine_client_from_engine_args
+    async_llm = AsyncLLM.from_vllm_config(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/engine/async_llm.py", line 150, in from_vllm_config
+    return cls(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/engine/async_llm.py", line 118, in __init__
+    self.engine_core = core_client_class(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/engine/core_client.py", line 642, in __init__
+    super().__init__(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/engine/core_client.py", line 398, in __init__
+    self._wait_for_engine_startup()
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/v1/engine/core_client.py", line 430, in _wait_for_engine_startup
+    raise RuntimeError("Engine core initialization failed. "
+RuntimeError: Engine core initialization failed. See root cause above.

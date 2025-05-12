@@ -4,12 +4,13 @@ import os
 import subprocess
 import uuid
 import re # For parsing squeue and log files
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import datetime
 import logging
 from typing import List, Optional, Dict, Any
+import shlex
 
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s] [%(levelname)s] %(message)s',
                     handlers=[logging.StreamHandler()])
@@ -20,7 +21,7 @@ SCRIPTS_DIR_PY = "/home/aimotion_api/SERAPHIM/scripts"
 VLLM_LOG_DIR_PY = "/home/aimotion_api/SERAPHIM/seraphim_internal_logs"
 CONDA_ENV_NAME_PY = "seraphim_vllm_env"
 BACKEND_PORT_PY = 8870
-JOB_NAME_PREFIX_FOR_SQ_PY = "vllm_service"
+JOB_NAME_PREFIX_FOR_SQ_PY = "vllm_service" # For default job name creation
 
 app = FastAPI()
 app.add_middleware(
@@ -50,6 +51,7 @@ class DeployedServiceInfo(BaseModel):
     user: Optional[str] = None
     service_url: Optional[str] = None
     slurm_output_file: Optional[str] = None
+    slurm_error_file: Optional[str] = None
     raw_squeue_line: Optional[str] = None
 
 
@@ -62,7 +64,7 @@ def generate_sbatch_script_content(config: SlurmConfig, scripts_dir: str, conda_
         f'--host "0.0.0.0"', f'--port {config.service_port}', '--trust-remote-code'
     ]
     
-    current_max_model_len = 16384 
+    current_max_model_len = 16384
     if config.max_model_len is not None:
         current_max_model_len = config.max_model_len
         logger.info(f"Using user-defined max_model_len: {current_max_model_len} for {config.selected_model}")
@@ -73,11 +75,10 @@ def generate_sbatch_script_content(config: SlurmConfig, scripts_dir: str, conda_
         elif "mixtral" in config.selected_model.lower() or "pixtral" in config.selected_model.lower():
             current_max_model_len = 32768
             logger.info(f"Defaulted max_model_len to {current_max_model_len} for {config.selected_model} (no user input)")
-        # Add other model specific defaults here if desired
-        else: # General default if not user-set and no specific rule matches
+        else: 
             logger.info(f"Using general default max_model_len: {current_max_model_len} for {config.selected_model} (no user input or specific rule)")
             
-    if "pixtral" in config.selected_model.lower(): 
+    if "pixtral" in config.selected_model.lower():
         model_args.append('--guided-decoding-backend=lm-format-enforcer')
         model_args.append("--limit_mm_per_prompt 'image=8'")
         if "mistralai/Pixtral-12B-2409" in config.selected_model:
@@ -89,18 +90,19 @@ def generate_sbatch_script_content(config: SlurmConfig, scripts_dir: str, conda_
 
     mail_type_line = f"#SBATCH --mail-type=ALL\\n#SBATCH --mail-user={config.mail_user}" if config.mail_user else "#SBATCH --mail-type=NONE"
     safe_filename_job_name = "".join(c if c.isalnum() or c in ('_', '-') else '_' for c in config.job_name)
-    slurm_job_name = config.job_name 
+    slurm_job_name = config.job_name # Use the user-provided job name for #SBATCH --job-name
     unique_id = str(uuid.uuid4())[:8]
-    script_filename = f"deploy_{safe_filename_job_name}_{unique_id}.slurm"
+    script_filename = f"deploy_{safe_filename_job_name}_{unique_id}.slurm" # Use safe name for script file
     script_path = os.path.join(scripts_dir, script_filename)
 
-    slurm_out_file = os.path.join(scripts_dir, f"{safe_filename_job_name}_%j.out")
-    slurm_err_file = os.path.join(scripts_dir, f"{safe_filename_job_name}_%j.err")
+    # Use safe_filename_job_name for the log file patterns, consistent with how it's derived in get_active_deployments
+    slurm_out_file_pattern_for_sbatch = os.path.join(SCRIPTS_DIR_PY, f"{safe_filename_job_name}_%j.out")
+    slurm_err_file_pattern_for_sbatch = os.path.join(SCRIPTS_DIR_PY, f"{safe_filename_job_name}_%j.err")
 
     sbatch_content = f"""#!/bin/bash
 #SBATCH --job-name={slurm_job_name}
-#SBATCH --output={slurm_out_file}
-#SBATCH --error={slurm_err_file}
+#SBATCH --output={slurm_out_file_pattern_for_sbatch}
+#SBATCH --error={slurm_err_file_pattern_for_sbatch}
 #SBATCH --time={config.time_limit}
 #SBATCH --gres=gpu:{config.gpus}
 #SBATCH --ntasks=1
@@ -110,14 +112,14 @@ def generate_sbatch_script_content(config: SlurmConfig, scripts_dir: str, conda_
 
 echo "Current ulimit -n (soft): $(ulimit -Sn)"
 echo "Current ulimit -n (hard): $(ulimit -Hn)"
-ulimit -n 10240 # Attempt to set file descriptor limit
+ulimit -n 10240 
 if [ $? -eq 0 ]; then echo "Successfully set ulimit -n to $(ulimit -Sn)"; else echo "WARN: Failed to set ulimit -n. Current: $(ulimit -Sn). Check hard limits if issues persist."; fi
 echo "=================================================================="
 echo "✝ SERAPHIM vLLM Deployment Job - SLURM PREP ✝"
 echo "Job Start Time: $(date)"
 echo "Job ID: $SLURM_JOB_ID running on Node: $(hostname -f) (Short: $(hostname -s))"
-echo "Slurm Output File: {slurm_out_file.replace('%j', '$SLURM_JOB_ID')}"
-echo "Slurm Error File: {slurm_err_file.replace('%j', '$SLURM_JOB_ID')}"
+echo "Slurm Output File: {slurm_out_file_pattern_for_sbatch.replace('%j', '$SLURM_JOB_ID')}"
+echo "Slurm Error File: {slurm_err_file_pattern_for_sbatch.replace('%j', '$SLURM_JOB_ID')}"
 echo "Model: {config.selected_model}"
 echo "Target Service Port: {config.service_port}"
 echo "Conda Env: {conda_env_name}"
@@ -137,11 +139,10 @@ echo "Conda env '{conda_env_name}' activated. Path: $CONDA_PREFIX";
 HF_TOKEN_VALUE="{config.hf_token or ''}"
 if [ -n "$HF_TOKEN_VALUE" ]; then export HF_TOKEN="$HF_TOKEN_VALUE"; echo "HF_TOKEN set."; else echo "HF_TOKEN not provided."; fi
 
-# vLLM specific environment variables
-export VLLM_CONFIGURE_LOGGING="0" 
-export VLLM_NO_USAGE_STATS="True" 
+export VLLM_CONFIGURE_LOGGING="0"
+export VLLM_NO_USAGE_STATS="True"
 export VLLM_DO_NOT_TRACK="True"
-export VLLM_ALLOW_LONG_MAX_MODEL_LEN="1" # <<< THIS IS THE IMPORTANT FIX
+export VLLM_ALLOW_LONG_MAX_MODEL_LEN="1"
 echo "VLLM_ALLOW_LONG_MAX_MODEL_LEN set to 1."
 
 echo -e "\\nStarting vLLM API Server in FOREGROUND..."
@@ -159,7 +160,7 @@ if [ $VLLM_EXIT_CODE -eq 0 ]; then echo "vLLM exited cleanly or was terminated."
 echo "Slurm job $SLURM_JOB_ID finished."
 echo "=================================================================="
 """
-    return script_path, sbatch_content, slurm_out_file.replace('%j', '$SLURM_JOB_ID'), slurm_err_file.replace('%j', '$SLURM_JOB_ID')
+    return script_path, sbatch_content, slurm_out_file_pattern_for_sbatch, slurm_err_file_pattern_for_sbatch
 
 @app.post("/api/deploy")
 async def deploy_vllm_service_api(config: SlurmConfig, request: Request):
@@ -167,7 +168,7 @@ async def deploy_vllm_service_api(config: SlurmConfig, request: Request):
     try: os.makedirs(SCRIPTS_DIR_PY, exist_ok=True)
     except OSError as e: raise HTTPException(status_code=500, detail=f"Server error creating script dir: {e}")
 
-    script_path, sbatch_content, slurm_out_pattern, slurm_err_pattern = generate_sbatch_script_content(
+    script_path, sbatch_content, slurm_out_file_pattern, slurm_err_file_pattern = generate_sbatch_script_content(
         config, SCRIPTS_DIR_PY, CONDA_ENV_NAME_PY
     )
     try:
@@ -183,13 +184,14 @@ async def deploy_vllm_service_api(config: SlurmConfig, request: Request):
         job_id = job_id_message.split(" ")[-1].strip() if "Submitted batch job" in job_id_message else "Unknown"
         logger.info(f"Sbatch successful. Output: '{job_id_message}', Parsed Job ID: {job_id}")
         
-        actual_slurm_out = slurm_out_pattern.replace('$SLURM_JOB_ID', job_id if job_id != "Unknown" else "<JOB_ID>")
-        actual_slurm_err = slurm_err_pattern.replace('$SLURM_JOB_ID', job_id if job_id != "Unknown" else "<JOB_ID>")
+        actual_slurm_out = slurm_out_file_pattern.replace('%j', job_id if job_id != "Unknown" else "<JOB_ID>")
+        actual_slurm_err = slurm_err_file_pattern.replace('%j', job_id if job_id != "Unknown" else "<JOB_ID>")
 
         return {"message": f"Slurm job submitted! ({job_id_message})", "job_id": job_id,
-                "script_path": script_path, "slurm_output_file_pattern": actual_slurm_out,
-                "slurm_error_file_pattern": actual_slurm_err,
-                "monitoring_note": f"Monitor Slurm output ({actual_slurm_out}) for service logs and errors. Note: VLLM_ALLOW_LONG_MAX_MODEL_LEN is set to 1."}
+                "script_path": script_path, 
+                "slurm_output_file_pattern": actual_slurm_out, 
+                "slurm_error_file_pattern": actual_slurm_err,  
+                "monitoring_note": f"Monitor Slurm output ({actual_slurm_out}) for service logs and errors."}
     except subprocess.TimeoutExpired: raise HTTPException(status_code=500, detail="sbatch command timed out.")
     except subprocess.CalledProcessError as e:
         detail_msg = f"Sbatch failed. RC: {e.returncode}. Stderr: {e.stderr.strip()}" if e.stderr.strip() else "Sbatch failed."
@@ -202,7 +204,7 @@ def parse_slurm_log_for_url(log_file_path: str, job_node: str, job_port: str) ->
         logger.debug(f"Log file not found for URL parsing: {log_file_path}")
         return None
     try:
-        with open(log_file_path, 'r', errors='ignore') as f: 
+        with open(log_file_path, 'r', errors='ignore') as f:
             for _ in range(200): 
                 line = f.readline()
                 if not line: break
@@ -212,9 +214,9 @@ def parse_slurm_log_for_url(log_file_path: str, job_node: str, job_port: str) ->
                     if log_port_str == job_port:
                         service_host = job_node if job_node and log_ip == "0.0.0.0" else log_ip
                         if service_host:
-                            return f"http://{service_host}:{job_port}/docs" 
+                            return f"http://{service_host}:{job_port}/docs"
             logger.debug(f"Uvicorn URL line not found in first 200 lines of {log_file_path}")
-            if job_node and job_port:
+            if job_node and job_port: 
                 return f"http://{job_node}:{job_port}/docs (best guess, check log for actual URL)"
     except Exception as e:
         logger.warning(f"Could not read or parse log file {log_file_path}: {e}")
@@ -226,14 +228,14 @@ async def get_active_deployments():
     try:
         user = subprocess.check_output("whoami", text=True).strip()
         squeue_cmd = ["squeue", "-u", user, "-o", "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R",
-                        "--noheader", "--states=RUNNING,PENDING"]
+                      "--noheader", "--states=RUNNING,PENDING,COMPLETING,SUSPENDED"] # Added more states
         process = subprocess.run(squeue_cmd, capture_output=True, text=True, check=True, timeout=15)
         
         for line in process.stdout.strip().split('\n'):
             if not line.strip(): continue
             try:
                 parts = line.split(maxsplit=7) 
-                if len(parts) < 8: 
+                if len(parts) < 8:
                     logger.warning(f"Skipping malformed squeue line (not enough parts): {line}")
                     continue
 
@@ -243,37 +245,39 @@ async def get_active_deployments():
                 user_val = parts[3].strip()
                 state_val = parts[4].strip()
                 time_val = parts[5].strip()
-                # nodes_count_val = parts[6].strip() # Not directly used in DeployedServiceInfo
                 node_list_val = parts[7].strip()   
 
-                if not job_name_squeue.startswith(JOB_NAME_PREFIX_FOR_SQ_PY): 
-                    continue
+                # REMOVED FILTER: if not job_name_squeue.startswith(JOB_NAME_PREFIX_FOR_SQ_PY): continue
 
+                # Log files are named based on the SLURM job name (#SBATCH --job-name=...).
+                # This job_name_squeue is that name.
+                safe_job_name_for_logs = "".join(c if c.isalnum() or c in ('_', '-') else '_' for c in job_name_squeue)
+                slurm_out_file_path = os.path.join(SCRIPTS_DIR_PY, f"{safe_job_name_for_logs}_{job_id}.out")
+                slurm_err_file_path = os.path.join(SCRIPTS_DIR_PY, f"{safe_job_name_for_logs}_{job_id}.err")
+                
                 service_info = DeployedServiceInfo(
                     job_id=job_id, job_name=job_name_squeue, status=state_val,
-                    nodes=node_list_val if state_val == "R" and node_list_val and node_list_val != "(None)" else None, 
+                    nodes=node_list_val if state_val in ["R", "RUNNING"] and node_list_val and node_list_val != "(None)" else None,
                     partition=partition, time_used=time_val, user=user_val,
+                    slurm_output_file=slurm_out_file_path, 
+                    slurm_error_file=slurm_err_file_path,   
                     raw_squeue_line=line
                 )
 
-                if service_info.status == "R" and service_info.nodes:
-                    safe_squeue_job_name = "".join(c if c.isalnum() or c in ('_', '-') else '_' for c in job_name_squeue)
-                    slurm_out_file_path = os.path.join(SCRIPTS_DIR_PY, f"{safe_squeue_job_name}_{job_id}.out")
-                    service_info.slurm_output_file = slurm_out_file_path
+                if service_info.status in ["R", "RUNNING"] and service_info.nodes:
+                    job_port_from_name = "8000" # Default, might not be relevant for non-SERAPHIM jobs
+                    # Attempt to extract port only if it looks like a SERAPHIM job
+                    if job_name_squeue.startswith(JOB_NAME_PREFIX_FOR_SQ_PY):
+                        port_match_in_name = re.search(r"_p(\d{4,5})", job_name_squeue) 
+                        if port_match_in_name:
+                            job_port_from_name = port_match_in_name.group(1)
                     
-                    job_port_from_name = "8000" 
-                    port_match_in_name = re.search(r"_p(\d{4,5})", job_name_squeue) 
-                    if port_match_in_name:
-                        job_port_from_name = port_match_in_name.group(1)
-                        logger.info(f"Extracted port {job_port_from_name} from job name {job_name_squeue}")
-                    else:
-                        logger.info(f"Could not extract port from job name {job_name_squeue}, defaulting to check for {job_port_from_name}")
-
-                    service_info.service_url = parse_slurm_log_for_url(
-                        slurm_out_file_path,
-                        service_info.nodes.split(',')[0].split('(')[0].strip(), 
-                        job_port_from_name
-                    )
+                    if os.path.exists(slurm_out_file_path): # Only parse if log exists
+                        service_info.service_url = parse_slurm_log_for_url(
+                            slurm_out_file_path,
+                            service_info.nodes.split(',')[0].split('(')[0].strip(), 
+                            job_port_from_name
+                        )
                 
                 deployments.append(service_info)
             except Exception as e:
@@ -287,9 +291,100 @@ async def get_active_deployments():
         logger.error(f"Error fetching active deployments: {e}", exc_info=True)
     return deployments
 
+@app.post("/api/cancel_job/{job_id}")
+async def cancel_slurm_job_api(job_id: str):
+    logger.info(f"Request to cancel Slurm job: {job_id}")
+    try:
+        if not re.match(r"^\d+$", job_id):
+            raise HTTPException(status_code=400, detail="Invalid job ID format.")
+        cancel_command = ["scancel", job_id]
+        process = subprocess.run(cancel_command, capture_output=True, text=True, timeout=10)
+        if process.returncode == 0:
+            logger.info(f"Successfully initiated cancellation for job {job_id}. Scancel output: {process.stdout.strip()}")
+            return {"message": f"Cancellation command sent for Slurm job {job_id}. Check Slurm status.", "details": process.stdout.strip()}
+        else:
+            error_detail = f"scancel command for job {job_id} failed or job already gone. RC: {process.returncode}."
+            if process.stderr.strip(): error_detail += f" Stderr: {process.stderr.strip()}"
+            if process.stdout.strip(): error_detail += f" Stdout: {process.stdout.strip()}"
+            logger.warning(error_detail)
+            raise HTTPException(status_code=400, detail=error_detail)
+    except subprocess.TimeoutExpired:
+        logger.error(f"scancel command timed out for job {job_id}.")
+        raise HTTPException(status_code=500, detail=f"scancel command for job {job_id} timed out.")
+    except FileNotFoundError:
+        logger.error("scancel command not found.")
+        raise HTTPException(status_code=500, detail="scancel command not found on the server.")
+    except HTTPException: raise
+    except Exception as e:
+        logger.error(f"Unexpected error cancelling job {job_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred while trying to cancel job {job_id}: {str(e)}")
+
+@app.get("/api/log_content")
+async def get_log_content_api(file_path: str = Query(..., description="Full path to the log file to read.")):
+    logger.info(f"Log content request for: {file_path}")
+    abs_scripts_dir = os.path.abspath(SCRIPTS_DIR_PY)
+    abs_file_path = os.path.abspath(file_path)
+
+    if not abs_file_path.startswith(abs_scripts_dir):
+        logger.warning(f"Forbidden access attempt for log file: {file_path} (resolved: {abs_file_path}). Not in {abs_scripts_dir}")
+        raise HTTPException(status_code=403, detail="Access to this file path is forbidden.")
+    if not os.path.exists(abs_file_path):
+        logger.info(f"Log file not yet found or path is incorrect: {abs_file_path}")
+        return {"log_content": f"(Log file not yet available: {os.path.basename(file_path)})"}
+    if not os.path.isfile(abs_file_path):
+        logger.warning(f"Requested path is not a file: {abs_file_path}")
+        raise HTTPException(status_code=400, detail=f"Requested path is not a file: {file_path}")
+
+    try:
+        log_content_lines = []
+        file_size = os.path.getsize(abs_file_path)
+        # Max lines to read from different parts of the file
+        max_lines_total = 300 # Reduced max lines for more frequent polling
+        max_bytes_head = 30 * 1024 
+        max_bytes_tail = 70 * 1024 
+        
+        if file_size == 0:
+            return {"log_content": "(Log file is empty)"}
+
+        if file_size <= (max_bytes_head + max_bytes_tail): 
+             with open(abs_file_path, 'r', errors='ignore') as f:
+                log_content_lines = [line for i, line in enumerate(f) if i < max_lines_total]
+                if len(log_content_lines) == max_lines_total:
+                    current_pos = f.tell()
+                    f.seek(0, os.SEEK_END)
+                    end_pos = f.tell()
+                    if current_pos < end_pos : # Check if there's more content
+                        log_content_lines.append(f"\n--- (Log truncated, showing first {max_lines_total} lines from small file) ---\n")
+        else: 
+            head_lines_count = max_lines_total // 3
+            tail_lines_count = max_lines_total - head_lines_count
+            
+            with open(abs_file_path, 'r', errors='ignore') as f:
+                bytes_read = 0
+                for i in range(head_lines_count):
+                    line = f.readline()
+                    if not line or bytes_read > max_bytes_head: break
+                    log_content_lines.append(line)
+                    bytes_read += len(line.encode('utf-8'))
+            
+            log_content_lines.append(f"\n\n... (log truncated - {file_size // 1024} KB total, showing ~{head_lines_count} head and ~{tail_lines_count} tail lines) ...\n\n")
+            
+            with open(abs_file_path, 'rb') as f: 
+                f.seek(0, os.SEEK_END)
+                current_seek_offset = min(max_bytes_tail, f.tell())
+                f.seek(-current_seek_offset, os.SEEK_END)
+                if f.tell() > 0: f.readline() 
+                raw_tail_lines = [line_bytes.decode('utf-8', errors='ignore') for line_bytes in f]
+                log_content_lines.extend(raw_tail_lines[-tail_lines_count:])
+
+        return {"log_content": "".join(log_content_lines)}
+    except Exception as e:
+        logger.error(f"Could not read log file {file_path}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error reading log file: {str(e)}")
+
 if __name__ == "__main__":
     os.makedirs(SCRIPTS_DIR_PY, exist_ok=True)
-    os.makedirs(VLLM_LOG_DIR_PY, exist_ok=True)
+    os.makedirs(VLLM_LOG_DIR_PY, exist_ok=True) 
     logger.info(f"Starting SERAPHIM Backend Server on http://0.0.0.0:{BACKEND_PORT_PY}")
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=BACKEND_PORT_PY)

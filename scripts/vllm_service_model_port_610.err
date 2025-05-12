@@ -1,0 +1,95 @@
+Found ulimit of 10240 and failed to automatically increase with error current limit exceeds maximum limit. This can cause fd limit errors like `OSError: [Errno 24] Too many open files`. Consider increasing with ulimit -n
+slurmstepd-ki-g0002: error: *** JOB 610 ON ki-g0002 CANCELLED AT 2025-05-12T06:32:29 ***
+Traceback (most recent call last):
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/bin/vllm", line 8, in <module>
+    sys.exit(main())
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/entrypoints/cli/main.py", line 53, in main
+    args.dispatch_function(args)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/entrypoints/cli/serve.py", line 27, in cmd
+    uvloop.run(run_server(args))
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/uvloop/__init__.py", line 82, in run
+    return loop.run_until_complete(wrapper())
+  File "uvloop/loop.pyx", line 1512, in uvloop.loop.Loop.run_until_complete
+  File "uvloop/loop.pyx", line 1505, in uvloop.loop.Loop.run_until_complete
+  File "uvloop/loop.pyx", line 1379, in uvloop.loop.Loop.run_forever
+  File "uvloop/loop.pyx", line 557, in uvloop.loop.Loop._run
+  File "uvloop/loop.pyx", line 476, in uvloop.loop.Loop._on_idle
+  File "uvloop/cbhandles.pyx", line 83, in uvloop.loop.Handle._run
+  File "uvloop/cbhandles.pyx", line 61, in uvloop.loop.Handle._run
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/uvloop/__init__.py", line 61, in wrapper
+    return await main
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/entrypoints/openai/api_server.py", line 1078, in run_server
+    async with build_async_engine_client(args) as engine_client:
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/entrypoints/openai/api_server.py", line 146, in build_async_engine_client
+    async with build_async_engine_client_from_engine_args(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/entrypoints/openai/api_server.py", line 166, in build_async_engine_client_from_engine_args
+    vllm_config = engine_args.create_engine_config(usage_context=usage_context)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/engine/arg_utils.py", line 1099, in create_engine_config
+    model_config = self.create_model_config()
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/engine/arg_utils.py", line 987, in create_model_config
+    return ModelConfig(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/config.py", line 451, in __init__
+    hf_config = get_config(self.hf_config_path or self.model,
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/transformers_utils/config.py", line 324, in get_config
+    config = AutoConfig.from_pretrained(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/transformers/models/auto/configuration_auto.py", line 1114, in from_pretrained
+    config_dict, unused_kwargs = PretrainedConfig.get_config_dict(pretrained_model_name_or_path, **kwargs)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/transformers/configuration_utils.py", line 590, in get_config_dict
+    config_dict, kwargs = cls._get_config_dict(pretrained_model_name_or_path, **kwargs)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/transformers/configuration_utils.py", line 649, in _get_config_dict
+    resolved_config_file = cached_file(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/transformers/utils/hub.py", line 266, in cached_file
+    file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/transformers/utils/hub.py", line 424, in cached_files
+    hf_hub_download(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1008, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1071, in _hf_hub_download_to_cache_dir
+    (url_to_download, etag, commit_hash, expected_size, xet_file_data, head_call_error) = _get_metadata_or_catch_error(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1531, in _get_metadata_or_catch_error
+    metadata = get_hf_file_metadata(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1448, in get_hf_file_metadata
+    r = _request_wrapper(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 286, in _request_wrapper
+    response = _request_wrapper(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 309, in _request_wrapper
+    response = http_backoff(method=method, url=url, **params, retry_on_exceptions=(), retry_on_status_codes=(429,))
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/huggingface_hub/utils/_http.py", line 310, in http_backoff
+    response = session.request(method=method, url=url, **kwargs)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/huggingface_hub/utils/_http.py", line 96, in send
+    return super().send(request, *args, **kwargs)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/urllib3/connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/urllib3/connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/urllib3/connection.py", line 516, in getresponse
+    httplib_response = super().getresponse()
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/http/client.py", line 1375, in getresponse
+    response.begin()
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/http/client.py", line 318, in begin
+    version, status, reason = self._read_status()
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/http/client.py", line 279, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/socket.py", line 717, in readinto
+    return self._sock.recv_into(b)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/ssl.py", line 1307, in recv_into
+    return self.read(nbytes, buffer)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/ssl.py", line 1163, in read
+    return self._sslobj.read(len, buffer)
+  File "/home/aimotion_api/anaconda3/envs/seraphim_vllm_env/lib/python3.10/site-packages/vllm/entrypoints/openai/api_server.py", line 1074, in signal_handler
+    raise KeyboardInterrupt("terminated")
+KeyboardInterrupt: terminated

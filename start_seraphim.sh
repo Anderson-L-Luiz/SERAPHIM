@@ -32,7 +32,7 @@ if [ ! -f "$MODELS_FILE_START" ]; then
     echo "Please create this file in the SERAPHIM directory ($SERAPHIM_DIR_START) and populate it with your models."
     echo "Format: model_id,Display Name (one model per line)"
     exit 1
-elif ! grep -q '[^[:space:]]' "$MODELS_FILE_START"; then # Check if file is empty or only whitespace
+elif ! grep -q '[^[:space:]]' "$MODELS_FILE_START"; then 
     echo "⚠️ Warning: Models file ($MODELS_FILE_START) is empty or contains only whitespace."
     echo "The model dropdown in the UI will be empty. Please populate the file with models."
 fi
