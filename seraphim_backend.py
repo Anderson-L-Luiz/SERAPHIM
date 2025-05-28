@@ -32,13 +32,12 @@ app.add_middleware(
 class SlurmConfig(BaseModel):
     selected_model: str
     service_port: str
-    hf_token: Optional[str] = None # Changed from str | None = None for Pydantic v2
+    hf_token: Optional[str] = None 
     job_name: str
     time_limit: str
     gpus: str
     cpus_per_task: str
     mem: str
-    # mail_user: Optional[str] = None # Removed as per user request
     max_model_len: Optional[int] = Field(None, gt=0)
 
 class DeployedServiceInfo(BaseModel):
@@ -51,7 +50,7 @@ class DeployedServiceInfo(BaseModel):
     time_used: Optional[str] = None
     user: Optional[str] = None
     service_url: Optional[str] = None
-    detected_port: Optional[str] = None # For displaying IP:Port separately if needed
+    detected_port: Optional[str] = None
     slurm_output_file: Optional[str] = None
     slurm_error_file: Optional[str] = None
     raw_squeue_line: Optional[str] = None
@@ -64,12 +63,8 @@ def get_ip_from_node_name(node_name: Optional[str]) -> Optional[str]:
     if match_ki_g:
         numeric_part = int(match_ki_g.group(1))
         return f"10.16.246.{numeric_part}"
-    # Add other patterns here if needed:
-    # match_slurm_node = re.fullmatch(r"slurm-node-(\d+)", node_name_clean)
-    # if match_slurm_node:
-    #     return f"10.20.30.{int(match_slurm_node.group(1))}"
     logger.debug(f"Node name '{node_name_clean}' did not match specific IP patterns. Will use nodename for URL if needed.")
-    return node_name_clean # Fallback to original (cleaned) node name if no specific IP rule matches
+    return node_name_clean
 
 def generate_sbatch_script_content(config: SlurmConfig, scripts_dir: str, conda_env_name: str) -> tuple[str, str, str, str]:
     conda_base_path_for_slurm_script = "$(conda info --base)"
@@ -80,7 +75,7 @@ def generate_sbatch_script_content(config: SlurmConfig, scripts_dir: str, conda_
         f'--host "0.0.0.0"', f'--port {config.service_port}', '--trust-remote-code'
     ]
     
-    current_max_model_len = 16384 # Default
+    current_max_model_len = 16384 
     if config.max_model_len is not None:
         current_max_model_len = config.max_model_len
     elif "llama-2-7b" in config.selected_model.lower() or "llama2-7b" in config.selected_model.lower(): current_max_model_len = 4096
@@ -91,13 +86,11 @@ def generate_sbatch_script_content(config: SlurmConfig, scripts_dir: str, conda_
         if "mistralai/Pixtral-12B-2409" in config.selected_model:
             model_args.extend(['--enable-auto-tool-choice', '--tool-call-parser=mistral',
                                '--tokenizer_mode mistral', '--revision aaef4baf771761a81ba89465a18e4427f3a105f9'])
-                               
+                                
     model_args.append(f'--max-model-len {current_max_model_len}')
     vllm_serve_command_full = vllm_serve_command + " \\\n    " + " \\\n    ".join(model_args)
 
-    # mail_user removed from SlurmConfig, so it will always be None here
-    # mail_type_line = f"#SBATCH --mail-type=ALL\\n#SBATCH --mail-user={config.mail_user}" if config.mail_user else "#SBATCH --mail-type=NONE"
-    mail_type_line = "#SBATCH --mail-type=NONE" # Since mail_user is removed
+    mail_type_line = "#SBATCH --mail-type=NONE"
 
     safe_filename_job_name = "".join(c if c.isalnum() or c in ('_', '-') else '_' for c in config.job_name)
     slurm_job_name = config.job_name 
@@ -128,7 +121,7 @@ echo "Job Start Time: $(date)"
 echo "Job ID: $SLURM_JOB_ID running on Node: $(hostname -f) (Short: $(hostname -s))"
 echo "Slurm Output File: {slurm_out_file_pattern_for_sbatch.replace('%j', '$SLURM_JOB_ID')}"
 echo "Slurm Error File: {slurm_err_file_pattern_for_sbatch.replace('%j', '$SLURM_JOB_ID')}"
-echo "Model: {config.selected_model}"
+echo "Model Identifier: {config.selected_model}"
 echo "Target Service Port: {config.service_port}"
 echo "Conda Env: {conda_env_name}"
 echo "Max Model Length Requested: {current_max_model_len}"
@@ -203,7 +196,6 @@ def parse_slurm_log_for_url(log_file_path: str, host_identifier: str, job_port: 
                     if log_port_str == job_port:
                         service_host = host_identifier if host_identifier and log_ip == "0.0.0.0" else log_ip
                         if service_host: return f"http://{service_host}:{job_port}" 
-            # If Uvicorn line not found, construct URL from host_identifier (IP or nodename) and port
             if host_identifier and job_port:
                 logger.info(f"Uvicorn line not found, constructing fallback URL for {host_identifier}:{job_port}")
                 return f"http://{host_identifier}:{job_port}"
@@ -242,22 +234,16 @@ async def get_active_deployments():
 
                 if state_val in ["R", "RUNNING"] and node_list_raw and node_list_raw != "(None)":
                     first_node_name = node_list_raw.split(',')[0].strip()
-                    node_ip = get_ip_from_node_name(first_node_name) # IP or cleaned nodename
+                    node_ip = get_ip_from_node_name(first_node_name) 
                     
-                    # Port detection (primarily for SERAPHIM jobs)
                     if job_name_squeue.startswith(JOB_NAME_PREFIX_FOR_SQ_PY):
                         port_match = re.search(r"_p(\d{4,5})", job_name_squeue)
                         if port_match: detected_port = port_match.group(1)
                     
-                    if not detected_port: # Fallback if not in name (e.g. non-SERAPHIM or default port)
-                         # Try to get from config if it's a seraphim job, else common default
-                         # This part is tricky as we don't store the submitted port with the job easily.
-                         # For now, we'll assume a common default or rely on log parsing.
-                         # Or, we can try to parse it from the log without a known port first.
-                         # For simplicity, we'll try with a common default if not in name for URL.
-                         detected_port = "8000" # A common default if not found in name
+                    if not detected_port: 
+                        detected_port = "8000" 
 
-                    host_identifier_for_url = node_ip or first_node_name # Prefer derived IP
+                    host_identifier_for_url = node_ip or first_node_name 
                     if os.path.exists(out_file) and host_identifier_for_url and detected_port:
                         service_url = parse_slurm_log_for_url(out_file, host_identifier_for_url, detected_port)
 
@@ -306,13 +292,13 @@ async def get_log_content_api(file_path: str = Query(...)):
         file_size = os.path.getsize(abs_file_path)
         if file_size == 0: return {"log_content": "(Log file is empty)"}
         
-        max_lines, head_kb, tail_kb = 300, 30, 70 # Lines, KBs
+        max_lines, head_kb, tail_kb = 300, 30, 70 
         
         content_lines = []
         if file_size <= (head_kb + tail_kb) * 1024:
             with open(abs_file_path, 'r', errors='ignore') as f:
                 content_lines = [line for i, line in enumerate(f) if i < max_lines]
-                if len(content_lines) == max_lines and f.readline(): # Check if more exists
+                if len(content_lines) == max_lines and f.readline(): 
                     content_lines.append(f"\n--- (Log truncated, showing first {max_lines} lines) ---\n")
         else:
             head_l_count = max_lines // 3
@@ -327,7 +313,7 @@ async def get_log_content_api(file_path: str = Query(...)):
             content_lines.append(f"\n\n... (log truncated - {file_size // 1024} KB total) ...\n\n")
             with open(abs_file_path, 'rb') as f:
                 f.seek(max(0, file_size - tail_kb * 1024))
-                if f.tell() > 0: f.readline() # Discard partial line
+                if f.tell() > 0: f.readline() 
                 raw_tail = [ln.decode('utf-8', errors='ignore') for ln in f.readlines()]
                 content_lines.extend(raw_tail[-tail_l_count:])
         return {"log_content": "".join(content_lines)}

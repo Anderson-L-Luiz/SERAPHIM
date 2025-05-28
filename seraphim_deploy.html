@@ -36,7 +36,7 @@
         body { 
             font-family: var(--font-body); background-color: var(--bg-color); 
             color: var(--text-color); display: flex; flex-direction: column; 
-            font-size: 15px; /* Base font size slightly smaller for dense UI */
+            font-size: 15px; 
             line-height: 1.4; 
         }
         .header { 
@@ -88,7 +88,7 @@
             color: var(--log-text-color); 
             padding: 10px; 
             border-radius: 4px; font-family: 'Monaco', 'Consolas', 'Courier New', Courier, monospace;
-            font-size: 1.0em; /* Increased log font size */
+            font-size: 1.0em; 
             white-space: pre-wrap; word-wrap: break-word;
             border: 1px solid var(--matrix-green-darkest);
             flex-grow: 1; overflow-y: auto; min-height: 150px; 
@@ -124,19 +124,94 @@
         }
         #model-select option { background-color: #000000; color: var(--matrix-green); }
 
+        /* ----- Start: New Styles for Model Source Toggle & Custom Path ----- */
+        .model-source-toggle {
+            display: flex;
+            margin-bottom: 10px; /* Spacing after the toggle */
+            border: 1px solid var(--matrix-green-darker);
+            border-radius: 4px;
+            overflow: hidden; /* To contain the labels within rounded corners */
+        }
+        .model-source-toggle input[type="radio"] {
+            display: none; /* Hide actual radio button */
+        }
+        .model-source-toggle label { /* Style labels to act as buttons */
+            flex: 1; /* Distribute space equally */
+            padding: 7px 10px;
+            text-align: center;
+            cursor: pointer;
+            background-color: #000; /* Default background */
+            color: var(--text-muted-color);
+            font-size: 0.8em;
+            transition: background-color 0.2s, color 0.2s;
+            margin-top: 0; 
+            margin-bottom: 0;
+            text-transform: none; 
+            letter-spacing: normal; 
+            border: none; /* Remove default label border if any */
+        }
+        .model-source-toggle input[type="radio"]:checked + label {
+            background-color: var(--matrix-green-darker);
+            color: #000; /* Dark text for contrast on green */
+            font-weight: bold;
+            text-shadow: none;
+        }
+        .model-source-toggle label:not(:last-child) { /* Add separator between labels */
+            border-right: 1px solid var(--matrix-green-darker);
+        }
+        #custom-model-path-container { /* Initially hidden */
+            margin-bottom: 8px; /* Spacing after this container */
+        }
+        .info-text {
+            font-size: 0.75em;
+            color: var(--text-muted-color);
+            background-color: rgba(0, 255, 0, 0.05); 
+            padding: 6px;
+            border-radius: 3px;
+            margin-top: 4px; /* Space from the input field above */
+            border: 1px dashed var(--matrix-green-darkest);
+            line-height: 1.3;
+        }
+        .info-text a {
+            color: var(--accent-color);
+            text-decoration: underline;
+        }
+        .info-text a:hover {
+            color: var(--matrix-green);
+        }
+        .info-text code {
+            background-color: var(--matrix-bg);
+            color: var(--primary-color);
+            padding: 1px 3px;
+            border-radius: 2px;
+            font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+        }
+        /* ----- End: New Styles ----- */
 
-        label { display: block; margin-top: 8px; margin-bottom: 2px; font-weight: 400; font-size: 0.75em; color: var(--text-muted-color); text-transform: uppercase; letter-spacing: 0.5px;}
-        select:not(#model-select), input[type="text"]:not(#model-search), input[type="number"], input[type="password"] { 
+        label:not(.model-source-toggle label) { /* Ensure general labels are not affected by toggle label style */
+             display: block; margin-top: 8px; margin-bottom: 2px; font-weight: 400; 
+             font-size: 0.75em; color: var(--text-muted-color); 
+             text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        select:not(#model-select), input[type="text"]:not(#model-search), input[type="number"], input[type="password"], input[type="text"]#custom-model-path { 
             width: 100%; padding: 7px; margin-bottom: 8px; 
             border-radius: 4px; border: 1px solid var(--matrix-green-darker); 
             box-sizing: border-box; font-size: 0.85em; 
             background-color: #000000; color: var(--matrix-green); 
         }
-        select:not(#model-select):focus, input[type="text"]:not(#model-search):focus, input[type="number"]:focus, input[type="password"]:focus { 
+        select:not(#model-select):focus, input[type="text"]:not(#model-search):focus, 
+        input[type="number"]:focus, input[type="password"]:focus, input[type="text"]#custom-model-path:focus { 
             border-color: var(--matrix-green); 
             box-shadow: 0 0 5px var(--matrix-green); 
             outline: none; background-color: #111111; 
         }
+        input:disabled, select:disabled {
+            background-color: #222 !important;
+            color: #555 !important;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
 
         button { 
             background: var(--matrix-green-darkest); 
@@ -176,7 +251,7 @@
             padding: 7px; margin-bottom: 5px; border-radius: 4px; 
             font-size: 0.75em; line-height: 1.3; 
             cursor: pointer; transition: background-color 0.2s ease; 
-            position: relative; /* For absolute positioning of cancel button if needed */
+            position: relative; 
         }
         .endpoint-item:hover { background-color: var(--matrix-green-darkest); }
         .endpoint-item.selected { background-color: var(--matrix-green-darker); color: #000; border-left: 3px solid var(--matrix-green); }
@@ -188,12 +263,11 @@
         .cancel-job-button {
             background: var(--cancel-button-bg); color: #fff;
             padding: 2px 5px; font-size: 0.9em; 
-            margin-left: 8px; /* Space it from other text if it's inline */
+            margin-left: 8px; 
             border-radius: 3px;
             border: 1px solid var(--error-color); text-shadow: none;
-            display: inline-block; /* Keeps it in flow */
-            vertical-align: middle; /* Align with text better */
-            /* float: none; Remove float */
+            display: inline-block; 
+            vertical-align: middle; 
         }
         .cancel-job-button:hover:not(:disabled) { background: var(--cancel-button-hover-bg); border-color: #FF5555; }
 
@@ -203,8 +277,8 @@
 </head>
 <body>
     <div class="header">
-        <h1><span class="icon">⚡</span> SERAPHIM <span class="icon">⚡</span></h1>
-        <p>Systematic Engine for Resource Allocation & Parallel Hybrid Intelligent Modeling</p>
+        <h1><span class="icon"></span> SERAPHIM <span class="icon"></span></h1>
+        <p>Scalable Engine for Reasoning, Analysis, Prediction, Hosting, and Intelligent Modeling</p>
     </div>
     
     <div class="page-content-wrapper">
@@ -217,12 +291,30 @@
             <div class="form-container"> 
                 <h3><span class="icon">⚙️</span> Deploy New vLLM Instance</h3>
                 
-                <label for="model-search">Select Model (type to filter):</label>
-                <div class="searchable-select-container">
-                    <input type="text" id="model-search" placeholder="Filter models..." autocomplete="off">
-                    <select id="model-select"><option value="">-- Loading... --</option></select>
+                <label>Model Source:</label> <div class="model-source-toggle">
+                    <input type="radio" id="model-source-list" name="model_source" value="list" checked>
+                    <label for="model-source-list">Select from List</label>
+                    <input type="radio" id="model-source-custom" name="model_source" value="custom">
+                    <label for="model-source-custom">Custom Local Path</label>
                 </div>
-                
+
+                <div id="model-list-selection-container">
+                    <label for="model-search">Select Model (type to filter):</label>
+                    <div class="searchable-select-container">
+                        <input type="text" id="model-search" placeholder="Filter models..." autocomplete="off">
+                        <select id="model-select"><option value="">-- Loading... --</option></select>
+                    </div>
+                </div>
+
+                <div id="custom-model-path-container" style="display: none;">
+                    <label for="custom-model-path">Custom Local Model Path:</label>
+                    <input type="text" id="custom-model-path" placeholder="/path/to/your/vllm_compatible_model_dir">
+                    <p class="info-text">
+                        Path must be absolute & accessible by Slurm compute nodes.
+                        Model must be vLLM compatible (see <a href="https://docs.vllm.ai/en/latest/models/adding_model.html" target="_blank" rel="noopener noreferrer">vLLM Docs</a>).
+                        Grant read permissions to the model directory (e.g., <code>chmod -R ugo+r /path/to/model</code>) for SERAPHIM to access it.
+                    </p>
+                </div>
                 <label for="max-model-len">Max Model Length (Optional):</label>
                 <input type="number" id="max-model-len" placeholder="e.g., 4096 (blank for default)" min="1"/>
                 <label for="service-port">Service Port (on Slurm node):</label>
@@ -246,9 +338,9 @@
 
         <div class="column endpoints-column" id="active-deployments-column-wrapper">
             <div class="endpoints-container-inner"> 
-                 <h3><span class="icon">📡</span> Active Slurm Jobs</h3>
-                 <button id="refresh-endpoints-button">Refresh Status</button>
-                 <div id="deployed-endpoints-list"><p><em>Loading active jobs...</em></p></div>
+                <h3><span class="icon">📡</span> Active Slurm Jobs</h3>
+                <button id="refresh-endpoints-button">Refresh Status</button>
+                <div id="deployed-endpoints-list"><p><em>Loading active jobs...</em></p></div>
             </div>
         </div>
 
@@ -258,7 +350,7 @@
         </div>
     </div>
 
-    <div class="footer">✧ SERAPHIM CORE Interface v2.4 (Matrix Reloaded) ✧ TDC AI | ANDERSON LUIZ ✧</div>
+    <div class="footer">✧ SERAPHIM CORE Interface v2.7 ✧ TDC AI | <a href="https://www.linkedin.com/in/anderson-l-luiz/" target="_blank" rel="noopener noreferrer">ANDERSON DE LIMA LUIZ</a> ✧</div>
     <script src="seraphim_logic.js" defer></script>
 </body>
 </html>

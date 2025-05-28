@@ -28,13 +28,16 @@ echo "Starting SERAPHIM Application..."
 echo "================================="
 
 if [ ! -f "$MODELS_FILE_START" ]; then
-    echo "❌ Error: Models file ($MODELS_FILE_START) not found!"
-    echo "Please create this file in the SERAPHIM directory ($SERAPHIM_DIR_START) and populate it with your models."
-    echo "Format: model_id,Display Name (one model per line)"
-    exit 1
+    echo "ℹ️ Info: Models file ($MODELS_FILE_START) not found!"
+    echo "The model dropdown in the UI will be empty if 'Select from List' is chosen."
+    echo "You can still use the 'Custom Local Path' option if models.txt is missing/empty."
+    # Create an empty models.txt if it doesn't exist to prevent JS errors on fetch,
+    # but allow proceeding as custom path is an alternative.
+    touch "$MODELS_FILE_START"
+    echo "An empty 'models.txt' has been created."
 elif ! grep -q '[^[:space:]]' "$MODELS_FILE_START"; then 
     echo "⚠️ Warning: Models file ($MODELS_FILE_START) is empty or contains only whitespace."
-    echo "The model dropdown in the UI will be empty. Please populate the file with models."
+    echo "The model dropdown in the UI will be empty. You can populate it or use the 'Custom Local Path' option."
 fi
 
 
@@ -103,8 +106,8 @@ fi
 _SERVER_IP_GUESS=$(hostname -I | awk '{print $1}' || echo "YOUR_SERVER_IP_ADDRESS")
 echo "================================="
 echo "✅ SERAPHIM Application Started!"
-echo "   Access Frontend UI at: http://${_SERVER_IP_GUESS}:$FRONTEND_PORT_START"
-echo "   (If the IP is incorrect, use your server's actual IP address)"
+echo "    Access Frontend UI at: http://${_SERVER_IP_GUESS}:$FRONTEND_PORT_START"
+echo "    (If the IP is incorrect, use your server's actual IP address)"
 echo ""
-echo "   To stop the application, run: ./stop_seraphim.sh"
+echo "    To stop the application, run: ./stop_seraphim.sh"
 echo "================================="
